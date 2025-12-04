@@ -271,77 +271,98 @@
         </div>
     </div>
 
-    <!-- Add/Edit Employee Modal -->
-    <div id="employeeModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="employeeModalTitle">Add Employee</h2>
-            </div>
-            <form id="employeeForm">
-                <input type="hidden" id="employeeId">
+   <!-- Add/Edit Employee Modal -->
+<div id="employeeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="employeeModalTitle">Add Employee</h2>
+            <span class="close-modal" onclick="closeEmployeeModal()">&times;</span>
+        </div>
+        <form id="employeeForm">
+            <input type="hidden" id="employeeId">
+            <div class="modal-body">
                 <div class="form-group">
                     <label for="empId">Employee ID</label>
-                    <input type="text" id="empId" class="form-control" required>
+                    <input type="text" id="empId" class="form-control" placeholder="EMP001">
+                    <small class="form-text text-muted">Leave empty to keep current</small>
                 </div>
                 <div class="form-group">
                     <label for="empName">Full Name</label>
-                    <input type="text" id="empName" class="form-control" required>
+                    <input type="text" id="empName" class="form-control" placeholder="Juan Dela Cruz">
+                    <small class="form-text text-muted">Leave empty to keep current</small>
                 </div>
                 <div class="form-group">
                     <label for="empDepartment">Department</label>
-                    <input type="text" id="empDepartment" class="form-control">
+                    <input type="text" id="empDepartment" class="form-control" placeholder="IT Department">
+                    <small class="form-text text-muted">Optional</small>
                 </div>
                 <div class="form-group">
                     <label for="empPosition">Position</label>
-                    <input type="text" id="empPosition" class="form-control">
+                    <input type="text" id="empPosition" class="form-control" placeholder="Software Developer">
+                    <small class="form-text text-muted">Optional</small>
                 </div>
-                <div class="form-group">
-                    <label for="empStartDate">Start Date</label>
-                    <input type="date" id="empStartDate" class="form-control" required>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="empStartDate">Start Date</label>
+                        <input type="date" id="empStartDate" class="form-control">
+                        <small class="form-text text-muted">Leave empty to keep current</small>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="empEndDate">End Date</label>
+                        <input type="date" id="empEndDate" class="form-control">
+                        <small class="form-text text-muted">Leave blank if active</small>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="empEndDate">End Date (Leave blank if active)</label>
-                    <input type="date" id="empEndDate" class="form-control">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="empLeaveCredits">Leave Credits</label>
+                        <input type="number" id="empLeaveCredits" class="form-control" min="0" value="15">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="empStatus">Status</label>
+                        <select id="empStatus" class="form-control">
+                            <option value="regular">Regular</option>
+                            <option value="permanent">Permanent</option>
+                            <option value="contractual">Contractual</option>
+                            <option value="resigned">Resigned</option>
+                            <option value="terminated">Terminated</option>
+                            <option value="awol">AWOL</option>
+                            <option value="retired">Retired</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="empLeaveCredits">Leave Credits</label>
-                    <input type="number" id="empLeaveCredits" class="form-control" value="15" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="deleteEmployeeInModal" style="display: none;">
+                    Delete Employee
+                </button>
+                <div class="footer-right">
+                    <button type="button" class="btn btn-secondary" onclick="closeEmployeeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
-                <div class="form-group">
-                    <label for="empStatus">Status</label>
-                    <select id="empStatus" class="form-control" required>
-                        <option value="regular">Regular</option>
-                        <option value="permanent">Permanent</option>
-                        <option value="contractual">Contractual</option>
-                        <option value="resigned">Resigned</option>
-                        <option value="terminated">Terminated</option>
-                        <option value="awol">AWOL</option>
-                        <option value="retired">Retired</option>
-                    </select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="closeEmployeeModal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Employee</button>
-                </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
+</div>
 
     <!-- Edit Leave Modal -->
-    <div id="leaveModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Edit Leave Request</h2>
-            </div>
-            <form id="leaveForm">
-                <input type="hidden" id="leaveId">
+<div id="leaveModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Leave Request</h2>
+            <span class="close-modal" onclick="closeLeaveModal()">&times;</span>
+        </div>
+        <form id="leaveForm">
+            <input type="hidden" id="leaveId">
+            <div class="modal-body">
                 <div class="form-group">
                     <label>Employee</label>
                     <input type="text" id="leaveEmpName" class="form-control" readonly>
+                    <small class="form-text text-muted">Employee cannot be changed</small>
                 </div>
                 <div class="form-group">
                     <label for="editLeaveType">Type of Leave</label>
-                    <select id="editLeaveType" class="form-control" required>
+                    <select id="editLeaveType" class="form-control">
                         <option value="sick">Sick Leave</option>
                         <option value="vacation">Vacation Leave</option>
                         <option value="emergency">Emergency Leave</option>
@@ -350,18 +371,23 @@
                         <option value="bereavement">Bereavement Leave</option>
                         <option value="unpaid">Unpaid Leave</option>
                     </select>
+                    <small class="form-text text-muted">Select to change, leave as is to keep current</small>
                 </div>
-                <div class="form-group">
-                    <label for="editStartLeave">Start Date</label>
-                    <input type="date" id="editStartLeave" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="editEndLeave">End Date</label>
-                    <input type="date" id="editEndLeave" class="form-control" required>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="editStartLeave">Start Date</label>
+                        <input type="date" id="editStartLeave" class="form-control">
+                        <small class="form-text text-muted">Leave empty to keep current</small>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="editEndLeave">End Date</label>
+                        <input type="date" id="editEndLeave" class="form-control">
+                        <small class="form-text text-muted">Leave empty to keep current</small>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="editLeaveStatus">Status</label>
-                    <select id="editLeaveStatus" class="form-control" required>
+                    <select id="editLeaveStatus" class="form-control">
                         <option value="pending">Pending</option>
                         <option value="approved">Approved</option>
                         <option value="rejected">Rejected</option>
@@ -369,15 +395,22 @@
                 </div>
                 <div class="form-group hidden" id="rejectionReasonGroup">
                     <label for="rejectionReason">Rejection Reason</label>
-                    <textarea id="rejectionReason" class="form-control" rows="3"></textarea>
+                    <textarea id="rejectionReason" class="form-control" rows="3" 
+                              placeholder="Provide reason for rejection (optional)"></textarea>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="closeLeaveModal">Cancel</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="deleteLeaveInModal" style="display: none;">
+                    Delete Leave Request
+                </button>
+                <div class="footer-right">
+                    <button type="button" class="btn btn-secondary" onclick="closeLeaveModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Update Leave</button>
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
+</div>
 
     <!-- JavaScript Modules (Load in order) -->
     <script src="{{ asset('js/config.js') }}"></script>

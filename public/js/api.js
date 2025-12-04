@@ -29,7 +29,7 @@ async function apiRequest(url, options = {}) {
     // Get CSRF token from meta tag
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
     
-    console.log('CSRF Token for request:', csrfToken ? 'Found' : 'Missing');
+    console.log('CSRF Token available:', !!csrfToken);
     
     const defaultHeaders = {
         'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ async function apiRequest(url, options = {}) {
     };
 
     const config = {
-        credentials: 'include',
+        credentials: 'include', // Important for session cookies
         ...options,
         headers: {
             ...defaultHeaders,
@@ -47,15 +47,14 @@ async function apiRequest(url, options = {}) {
         }
     };
 
-    // For FormData, remove Content-Type header (browser will set it with boundary)
+    // For FormData, remove Content-Type header (browser will set it)
     if (options.body && options.body instanceof FormData) {
         delete config.headers['Content-Type'];
     }
 
     console.log(`API Request to: ${url}`, { 
         method: config.method,
-        hasCSRF: !!csrfToken,
-        hasBody: !!config.body
+        hasCSRF: !!csrfToken
     });
 
     try {
@@ -68,6 +67,17 @@ async function apiRequest(url, options = {}) {
             ok: response.ok
         });
         
+        // Check for redirect to login
+        if (response.redirected && (response.url.includes('/login') || response.url.endsWith('/'))) {
+            console.error('REDIRECTED TO LOGIN PAGE! CSRF or session issue.');
+            // Don't redirect automatically, return error
+            return {
+                success: false,
+                error: { message: 'Authentication required. Please refresh and login again.' },
+                status: 401
+            };
+        }
+        
         // Try to parse as JSON
         let data;
         const contentType = response.headers.get('content-type');
@@ -78,21 +88,19 @@ async function apiRequest(url, options = {}) {
             const text = await response.text();
             console.error('Non-JSON response:', text.substring(0, 500));
             
-            // Check for CSRF/authentication issues
-            if (text.includes('CSRF') || text.includes('419')) {
-                data = { 
-                    message: 'CSRF token mismatch. Please refresh the page.',
-                    csrfError: true 
+            // Check if it's HTML (login page)
+            if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                return {
+                    success: false,
+                    error: { 
+                        message: 'Server returned login page. Session may have expired.',
+                        htmlError: true
+                    },
+                    status: response.status
                 };
-            } else if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-                data = { 
-                    message: 'Server returned HTML (likely redirect to login). Please check authentication.',
-                    htmlError: true,
-                    preview: text.substring(0, 200)
-                };
-            } else {
-                data = { message: 'Server returned non-JSON response' };
             }
+            
+            data = { message: 'Server returned non-JSON response' };
         }
 
         if (!response.ok) {
@@ -338,10 +346,81 @@ const LeaveAPI = {
     
 
     async update(id, leaveData) {
-        return await apiRequest(`${CONFIG.API_URL}/leave-requests/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(leaveData)
-        });
+        try {
+            console.log(`Updating leave ${id} with data:`, leaveData);
+            
+            // Get CSRF token from meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            
+            if (!csrfToken) {
+                console.error('CSRF token not found!');
+                return {
+                    success: false,
+                    error: { message: 'CSRF token missing. Please refresh the page.' },
+                    status: 403
+                };
+            }
+            
+            const response = await fetch(`${CONFIG.API_URL}/leave-requests/${id}`, {
+                method: 'PUT',
+                credentials: 'include', // Important for session cookies
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(leaveData)
+            });
+            
+            console.log('Update response status:', response.status);
+            
+            // Check if redirected to login
+            if (response.redirected && response.url.includes('/login')) {
+                console.error('Redirected to login - CSRF issue or session expired');
+                return {
+                    success: false,
+                    error: { message: 'Session expired or CSRF issue. Please refresh.' },
+                    status: 401
+                };
+            }
+            
+            let data;
+            const text = await response.text();
+            
+            // Check if response is HTML (login page)
+            if (text.includes('<!DOCTYPE') || text.includes('<html') || text.includes('loginScreen')) {
+                console.error('Received HTML login page - CSRF/session issue');
+                return {
+                    success: false,
+                    error: { message: 'Authentication issue. Please refresh and login again.' },
+                    status: 401
+                };
+            }
+            
+            // Try to parse as JSON
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('Failed to parse JSON:', e);
+                data = { message: 'Invalid JSON response', raw: text.substring(0, 200) };
+            }
+            
+            return {
+                success: response.ok,
+                data: data,
+                error: !response.ok ? data : null,
+                status: response.status
+            };
+            
+        } catch (error) {
+            console.error('Network error in LeaveAPI.update:', error);
+            return {
+                success: false,
+                error: { message: error.message || 'Network error' },
+                status: 0
+            };
+        }
     },
 
     async delete(id) {

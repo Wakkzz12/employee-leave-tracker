@@ -3,13 +3,41 @@
 /**
  * Initialize employee management
  */
+// employees.js - FIXED VERSION
 function initEmployees() {
-    document.getElementById('addEmployeeBtn').addEventListener('click', showAddEmployeeModal);
-    document.getElementById('closeEmployeeModal').addEventListener('click', closeEmployeeModal);
-
-    document.getElementById('employeeForm').addEventListener('submit', handleEmployeeSubmit);
+    console.log('Initializing employees module...');
+    
+    // SAFE: Use optional chaining and null checks
+    const addEmployeeBtn = document.getElementById('addEmployeeBtn');
+    if (addEmployeeBtn) {
+        addEmployeeBtn.addEventListener('click', showAddEmployeeModal);
+        console.log('✓ Add employee button initialized');
+    } else {
+        console.log('⚠ Add employee button not found (normal on login/register pages)');
+    }
+    
+    const closeEmployeeModal = document.getElementById('closeEmployeeModal');
+    if (closeEmployeeModal) {
+        closeEmployeeModal.addEventListener('click', closeEmployeeModalFunc);
+        console.log('✓ Close modal button initialized');
+    }
+    
+    const employeeForm = document.getElementById('employeeForm');
+    if (employeeForm) {
+        employeeForm.addEventListener('submit', handleEmployeeSubmit);
+        console.log('✓ Employee form initialized');
+    }
+    
+    console.log('Employees module initialization complete');
 }
 
+// Renamed to avoid conflict
+function closeEmployeeModalFunc() {
+    const modal = document.getElementById('employeeModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
 /**
  * Load all active employees
  */
@@ -113,7 +141,6 @@ function createEmployeeRow(emp) {
             <td>${emp.leave_credits || 0} days</td>
             <td>
                 <button class="btn btn-warning btn-sm" onclick="editEmployee(${emp.id})">Edit</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteEmployee(${emp.id})">Delete</button>
             </td>
         </tr>
     `;
@@ -143,34 +170,65 @@ async function handleEmployeeSubmit(e) {
     e.preventDefault();
 
     const dbId = document.getElementById('employeeId').value.trim();
+    const currentEmp = state.employees.find(e => e.id == dbId);
 
-    const employeeData = {
-        employee_id: document.getElementById('empId').value.trim(),
-        name: document.getElementById('empName').value.trim(),
-        department: document.getElementById('empDepartment')?.value || null,
-        position: document.getElementById('empPosition')?.value || null,
-        started_date: document.getElementById('empStartDate').value,
-        end_date: document.getElementById('empEndDate').value || null,
-        leave_credits: parseInt(document.getElementById('empLeaveCredits').value) || 15,
-        status: document.getElementById('empStatus').value
+    // Only update fields that have changed values
+    const employeeData = {};
+    
+    // Helper function to get value only if changed
+    const getValueIfChanged = (fieldId, propertyName, defaultValue = null) => {
+        const input = document.getElementById(fieldId);
+        const newValue = input.value.trim();
+        const oldValue = currentEmp ? currentEmp[propertyName] : null;
+        
+        // If editing and value didn't change, don't include it
+        if (dbId && newValue === (oldValue?.toString() || '')) {
+            return undefined;
+        }
+        
+        // If empty and not required, return null
+        if (newValue === '' && !input.hasAttribute('required')) {
+            return null;
+        }
+        
+        return newValue || defaultValue;
     };
-    console.log('Sending employee data:', employeeData); // Debug
+
+    // Only include fields that have values
+    const empId = getValueIfChanged('empId', 'employee_id');
+    if (empId !== undefined) employeeData.employee_id = empId;
+    
+    const empName = getValueIfChanged('empName', 'name');
+    if (empName !== undefined) employeeData.name = empName;
+    
+    const empDept = getValueIfChanged('empDepartment', 'department');
+    if (empDept !== undefined) employeeData.department = empDept;
+    
+    const empPos = getValueIfChanged('empPosition', 'position');
+    if (empPos !== undefined) employeeData.position = empPos;
+    
+    const empStart = getValueIfChanged('empStartDate', 'started_date');
+    if (empStart !== undefined) employeeData.started_date = empStart;
+    
+    const empEnd = getValueIfChanged('empEndDate', 'end_date');
+    if (empEnd !== undefined) employeeData.end_date = empEnd;
+    
+    const empCredits = getValueIfChanged('empLeaveCredits', 'leave_credits', 15);
+    if (empCredits !== undefined) employeeData.leave_credits = parseInt(empCredits) || 15;
+    
+    const empStatus = getValueIfChanged('empStatus', 'status', 'regular');
+    if (empStatus !== undefined) employeeData.status = empStatus;
+
+    console.log('Updating with data:', employeeData);
+
     try {
         const result = dbId
             ? await EmployeeAPI.update(dbId, employeeData)
             : await EmployeeAPI.create(employeeData);
 
         if (!result.success) {
-            // Show validation errors if available
-            if (result.data && result.data.errors) {
-                const errors = Object.entries(result.data.errors)
-                    .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
-                    .join('\n');
-                alert(`Validation errors:\n${errors}`);
-            } else {
-                console.error(result.error);
-                alert("Failed to save employee.");
-            }
+            console.error(result.error);
+            alert("Failed to save employee.");
             return;
         }
 
@@ -183,7 +241,6 @@ async function handleEmployeeSubmit(e) {
         alert("Network error.");
     }
 }
-
 /**
  * Edit employee modal
  */
@@ -194,14 +251,46 @@ window.editEmployee = function (id) {
     document.getElementById('employeeModalTitle').textContent = 'Edit Employee';
     document.getElementById('employeeId').value = emp.id;
 
-    document.getElementById('empId').value = emp.employee_id;
-    document.getElementById('empName').value = emp.name;
-    document.getElementById('empDepartment').value = emp.department ?? '';
-    document.getElementById('empPosition').value = emp.position ?? '';
-    document.getElementById('empStartDate').value = emp.started_date;
+    // Pre-fill but don't require all fields
+    document.getElementById('empId').value = emp.employee_id || '';
+    document.getElementById('empName').value = emp.name || '';
+    document.getElementById('empDepartment').value = emp.department || '';
+    document.getElementById('empPosition').value = emp.position || '';
+    document.getElementById('empStartDate').value = emp.started_date || '';
     document.getElementById('empEndDate').value = emp.end_date || '';
-    document.getElementById('empLeaveCredits').value = emp.leave_credits;
-    document.getElementById('empStatus').value = emp.status;
+    document.getElementById('empLeaveCredits').value = emp.leave_credits || 15;
+    document.getElementById('empStatus').value = emp.status || 'regular';
+
+    // Remove required attributes for edit (make fields optional)
+    const form = document.getElementById('employeeForm');
+    const inputs = form.querySelectorAll('input[required], select[required]');
+    inputs.forEach(input => input.removeAttribute('required'));
+
+    // Show delete button in modal footer (with icon)
+    let deleteBtn = document.getElementById('deleteEmployeeInModal');
+    const modalFooter = document.querySelector('.modal-footer');
+    
+    if (!deleteBtn) {
+        deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'btn btn-danger btn-sm';
+        deleteBtn.id = 'deleteEmployeeInModal';
+        deleteBtn.innerHTML = '🗑️'; // Icon + text
+        deleteBtn.title = 'Delete this employee';
+        deleteBtn.style.marginRight = 'auto';
+        modalFooter.insertBefore(deleteBtn, modalFooter.firstChild);
+    }
+    
+    // Update delete handler for this specific employee
+    deleteBtn.onclick = function() {
+        if (confirm(`Are you sure you want to delete ${emp.name}?`)) {
+            deleteEmployee(id);
+            closeEmployeeModal();
+        }
+    };
+    
+    // Show the button
+    deleteBtn.style.display = 'inline-block';
 
     document.getElementById('employeeModal').classList.add('active');
 };

@@ -109,6 +109,77 @@ class EmployeeController extends Controller
         }
     }
     
+    public function update(Request $request, $id)
+{
+    try {
+        $employee = Employee::findOrFail($id);
+        
+        // Only validate fields that are present in the request
+        $rules = [];
+        
+        if ($request->has('employee_id')) {
+            $rules['employee_id'] = 'required|string|max:50|unique:employees,employee_id,' . $id . ',id,deleted_at,NULL';
+        }
+        
+        if ($request->has('name')) {
+            $rules['name'] = 'required|string|max:255';
+        }
+        
+        if ($request->has('department')) {
+            $rules['department'] = 'nullable|string|max:100';
+        }
+        
+        if ($request->has('position')) {
+            $rules['position'] = 'nullable|string|max:100';
+        }
+        
+        if ($request->has('started_date')) {
+            $rules['started_date'] = 'required|date';
+        }
+        
+        if ($request->has('end_date')) {
+            $rules['end_date'] = 'nullable|date';
+        }
+        
+        if ($request->has('leave_credits')) {
+            $rules['leave_credits'] = 'required|integer|min:0';
+        }
+        
+        if ($request->has('status')) {
+            $rules['status'] = 'required|in:regular,permanent,contractual,resigned,terminated,awol,retired';
+        }
+        
+        $validator = Validator::make($request->all(), $rules);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
+        // Update only fields that are present in the request
+        $employee->fill($request->only([
+            'employee_id', 'name', 'department', 'position', 
+            'started_date', 'end_date', 'leave_credits', 'status'
+        ]));
+        
+        $employee->save();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $employee,
+            'message' => 'Employee updated successfully'
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to update employee'
+        ], 500);
+    }
+}
     /**
      * Soft delete an employee
      */

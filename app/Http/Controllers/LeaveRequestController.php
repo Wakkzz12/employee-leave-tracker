@@ -93,44 +93,78 @@ class LeaveRequestController extends Controller
      * Update an existing leave request
      */
     public function update(LeaveRequestFormRequest $request, $id)
-    {
+{
+    try {
         $leave = LeaveRequest::findOrFail($id);
         $employee = $leave->employee;
 
-
-        $days = (new LeaveRequest([
-            'start_leave' => $request->start_leave,
-            'end_leave'   => $request->end_leave
-        ]))->calculateDaysRequested();
-
-        // Balance adjustments depending on status change
+        // Only update provided fields
+        $updateData = [];
+        
+        if ($request->has('type_of_leave')) {
+            $updateData['type_of_leave'] = $request->type_of_leave;
+        }
+        
+        if ($request->has('start_leave')) {
+            $updateData['start_leave'] = $request->start_leave;
+        }
+        
+        if ($request->has('end_leave')) {
+            $updateData['end_leave'] = $request->end_leave;
+        }
+        
+        if ($request->has('status')) {
+            $updateData['status'] = ucfirst(strtolower($request->status));
+        }
+        
+        if ($request->has('rejection_reason')) {
+            $updateData['rejection_reason'] = $request->rejection_reason;
+        }
+        
+        // If dates changed, recalculate days
+        if ($request->has('start_leave') || $request->has('end_leave')) {
+            $start = $request->start_leave ?? $leave->start_leave;
+            $end = $request->end_leave ?? $leave->end_leave;
+            
+            $tempLeave = new LeaveRequest([
+                'start_leave' => $start,
+                'end_leave'   => $end
+            ]);
+            $updateData['days_requested'] = $tempLeave->calculateDaysRequested();
+        }
+        
+        // Handle status change for leave balance
         $oldStatus = $leave->status;
-        $newStatus = ucfirst(strtolower($request->status));
-
+        $newStatus = $updateData['status'] ?? $oldStatus;
+        
         if ($newStatus === 'Approved' && $oldStatus !== 'Approved') {
+            $days = $updateData['days_requested'] ?? $leave->days_requested;
             if (!$employee->deductLeaveBalance($days)) {
                 return response()->json(['message' => 'Insufficient leave balance.'], 422);
             }
         } elseif ($oldStatus === 'Approved' && $newStatus !== 'Approved') {
             $employee->restoreLeaveBalance($leave->days_requested);
         }
-
+        
+        // Update remaining credits
+        $updateData['remaining_credits'] = $employee->leave_balance;
+        
         // Apply updates
-        $leave->update([
-            'start_leave'       => $request->start_leave,
-            'end_leave'         => $request->end_leave,
-            'type_of_leave'     => $request->type_of_leave,
-            'days_requested'    => $days,
-            'remaining_credits' => $employee->leave_balance,
-            'status'            => $newStatus,
-            'rejection_reason'  => $request->rejection_reason,
-        ]);
-
+        $leave->update($updateData);
+        
         return response()->json([
+            'success' => true,
             'message' => 'Leave request updated successfully.',
-            'leave'   => $leave->load('employee'),
+            'data'   => $leave->load('employee'),
         ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to update leave request: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Soft delete a leave request

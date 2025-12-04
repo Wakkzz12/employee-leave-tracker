@@ -4,15 +4,41 @@
  * Initialize leave management
  */
 function initLeaves() {
-    // Close leave modal
-    document.getElementById('closeLeaveModal').addEventListener('click', closeLeaveModal);
+    console.log('Initializing leaves module...');
     
-    // Leave status change handler
-    document.getElementById('editLeaveStatus').addEventListener('change', handleLeaveStatusChange);
+    // Close leave modal - WITH NULL CHECK
+    const closeLeaveModalBtn = document.getElementById('closeLeaveModal');
+    if (closeLeaveModalBtn) {
+        closeLeaveModalBtn.addEventListener('click', closeLeaveModal);
+        console.log('✓ Close leave modal button initialized');
+    } else {
+        console.log('⚠ closeLeaveModal button not found');
+        // Try to add ID dynamically if button exists without ID
+        const cancelBtn = document.querySelector('#leaveModal .modal-footer .btn-secondary');
+        if (cancelBtn && !cancelBtn.id) {
+            cancelBtn.id = 'closeLeaveModal';
+            cancelBtn.addEventListener('click', closeLeaveModal);
+            console.log('✓ Added ID and listener to cancel button');
+        }
+    }
     
-    // Leave form submit
-    document.getElementById('leaveForm').addEventListener('submit', handleLeaveUpdate);
+    // Leave status change handler - WITH NULL CHECK
+    const editLeaveStatus = document.getElementById('editLeaveStatus');
+    if (editLeaveStatus) {
+        editLeaveStatus.addEventListener('change', handleLeaveStatusChange);
+        console.log('✓ Leave status change handler initialized');
+    }
+    
+    // Leave form submit - WITH NULL CHECK
+    const leaveForm = document.getElementById('leaveForm');
+    if (leaveForm) {
+        leaveForm.addEventListener('submit', handleLeaveSubmit);
+        console.log('✓ Leave form initialized');
+    }
+    
+    console.log('Leaves module initialization complete');
 }
+
 
 /**
  * Load all leave requests
@@ -104,6 +130,76 @@ function closeLeaveModal() {
     document.getElementById('leaveModal').classList.remove('active');
 }
 
+
+async function handleLeaveSubmit(e) {
+    e.preventDefault();
+
+    const leaveId = document.getElementById('leaveId').value;
+    const currentLeave = state.leaves.find(l => l.id == leaveId);
+
+    // Only include changed fields
+    const leaveData = {};
+
+    // Get CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    console.log('CSRF Token for leave update:', !!csrfToken);
+
+    // Helper to check if value changed
+    const getChangedValue = (fieldId, propertyName) => {
+        const input = document.getElementById(fieldId);
+        const newValue = input.value;
+        const oldValue = currentLeave ? currentLeave[propertyName] : null;
+        
+        if (newValue !== (oldValue?.toString() || '')) {
+            return newValue;
+        }
+        return undefined;
+    };
+
+    const type = getChangedValue('editLeaveType', 'type_of_leave');
+    if (type !== undefined) leaveData.type_of_leave = type;
+
+    const start = getChangedValue('editStartLeave', 'start_leave');
+    if (start !== undefined) leaveData.start_leave = start;
+
+    const end = getChangedValue('editEndLeave', 'end_leave');
+    if (end !== undefined) leaveData.end_leave = end;
+
+    const status = getChangedValue('editLeaveStatus', 'status');
+    if (status !== undefined) leaveData.status = status;
+
+    const reason = document.getElementById('rejectionReason').value;
+    if (status === 'rejected' && reason) {
+        leaveData.rejection_reason = reason;
+    }
+
+    console.log('Updating leave with:', leaveData);
+
+    try {
+        const result = await LeaveAPI.update(leaveId, leaveData);
+
+        console.log('Update result:', result);
+
+        if (result.success) {
+            alert('Leave request updated successfully!');
+            closeLeaveModal();
+            loadLeaves();
+        } else {
+            // Handle CSRF/session errors
+            if (result.status === 401 || result.error?.message?.includes('Authentication') || result.error?.message?.includes('CSRF')) {
+                alert('Your session has expired or there\'s a CSRF issue. Please refresh the page and login again.');
+                localStorage.clear();
+                window.location.reload();
+            } else {
+                showDetailedError(result.data || result.error);
+            }
+        }
+    } catch (error) {
+        console.error('Error updating leave:', error);
+        alert('Error updating leave request: ' + error.message);
+    }
+}
+
 /**
  * Handle leave status change
  */
@@ -162,29 +258,56 @@ async function handleLeaveUpdate(e) {
 /**
  * Edit leave request
  */
-window.editLeave = function(id) {
+window.editLeave = function (id) {
     const leave = state.leaves.find(l => l.id === id);
-    if (!leave) {
-        alert('Leave request not found');
-        return;
-    }
+    if (!leave) return alert("Leave request not found!");
 
     document.getElementById('leaveId').value = leave.id;
-    document.getElementById('leaveEmpName').value = `${leave.employee.name} (${leave.employee.employee_id})`;
+    document.getElementById('leaveEmpName').value = leave.employee?.name || 'Unknown';
     document.getElementById('editLeaveType').value = leave.type_of_leave;
     document.getElementById('editStartLeave').value = leave.start_leave;
     document.getElementById('editEndLeave').value = leave.end_leave;
-    document.getElementById('editLeaveStatus').value = leave.status;
-    document.getElementById('rejectionReason').value = leave.rejection_reason || '';
-    
+    document.getElementById('editLeaveStatus').value = leave.status.toLowerCase();
+
     // Show/hide rejection reason
     const reasonGroup = document.getElementById('rejectionReasonGroup');
-    if (leave.status === 'rejected') {
+    if (leave.status.toLowerCase() === 'rejected') {
         reasonGroup.classList.remove('hidden');
+        document.getElementById('rejectionReason').value = leave.rejection_reason || '';
     } else {
         reasonGroup.classList.add('hidden');
     }
+
+    // Remove required attributes for edit
+    const form = document.getElementById('leaveForm');
+    const inputs = form.querySelectorAll('[required]');
+    inputs.forEach(input => input.removeAttribute('required'));
+
+    // Show delete button in modal footer (with icon)
+    let deleteBtn = document.getElementById('deleteLeaveInModal');
+    const modalFooter = document.querySelector('#leaveModal .modal-footer');
     
+    if (!deleteBtn) {
+        deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'btn btn-danger btn-sm';
+        deleteBtn.id = 'deleteLeaveInModal';
+        deleteBtn.innerHTML = '🗑️'; // Icon + text
+        deleteBtn.title = 'Delete this leave request';
+        deleteBtn.style.marginRight = 'auto';
+        modalFooter.insertBefore(deleteBtn, modalFooter.firstChild);
+    }
+    
+    // Update delete handler for this specific leave
+    deleteBtn.onclick = function() {
+        if (confirm(`Delete leave request for ${leave.employee?.name || 'this employee'}?`)) {
+            deleteLeave(id);
+            closeLeaveModal();
+        }
+    };
+
+    deleteBtn.style.display = 'inline-block';
+
     document.getElementById('leaveModal').classList.add('active');
 };
 
