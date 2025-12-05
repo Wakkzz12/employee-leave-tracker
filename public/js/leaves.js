@@ -1,4 +1,4 @@
-// leaves.js - Leave Management Module
+// leaves.js - Complete Updated Version
 
 /**
  * Initialize leave management
@@ -6,39 +6,43 @@
 function initLeaves() {
     console.log('Initializing leaves module...');
     
-    // Close leave modal - WITH NULL CHECK
-    const closeLeaveModalBtn = document.getElementById('closeLeaveModal');
+    // Initialize modal close buttons
+    const closeLeaveModalBtn = document.getElementById('closeLeaveModalBtn');
     if (closeLeaveModalBtn) {
         closeLeaveModalBtn.addEventListener('click', closeLeaveModal);
         console.log('✓ Close leave modal button initialized');
-    } else {
-        console.log('⚠ closeLeaveModal button not found');
-        // Try to add ID dynamically if button exists without ID
-        const cancelBtn = document.querySelector('#leaveModal .modal-footer .btn-secondary');
-        if (cancelBtn && !cancelBtn.id) {
-            cancelBtn.id = 'closeLeaveModal';
-            cancelBtn.addEventListener('click', closeLeaveModal);
-            console.log('✓ Added ID and listener to cancel button');
-        }
     }
     
-    // Leave status change handler - WITH NULL CHECK
+    const cancelLeaveBtn = document.getElementById('cancelLeaveBtn');
+    if (cancelLeaveBtn) {
+        cancelLeaveBtn.addEventListener('click', closeLeaveModal);
+        console.log('✓ Cancel leave button initialized');
+    }
+    
+    // Leave status change handler
     const editLeaveStatus = document.getElementById('editLeaveStatus');
     if (editLeaveStatus) {
         editLeaveStatus.addEventListener('change', handleLeaveStatusChange);
         console.log('✓ Leave status change handler initialized');
     }
     
-    // Leave form submit - WITH NULL CHECK
+    // Leave form submit
     const leaveForm = document.getElementById('leaveForm');
     if (leaveForm) {
         leaveForm.addEventListener('submit', handleLeaveSubmit);
         console.log('✓ Leave form initialized');
+        
+        // Reset form when closed
+        leaveForm.addEventListener('reset', function() {
+            const deleteBtn = document.getElementById('deleteLeaveInModal');
+            if (deleteBtn) {
+                deleteBtn.style.display = 'none';
+            }
+        });
     }
     
     console.log('Leaves module initialization complete');
 }
-
 
 /**
  * Load all leave requests
@@ -124,134 +128,123 @@ function createLeaveRow(leave) {
 }
 
 /**
- * Close leave modal
+ * Handle leave form submission
  */
-function closeLeaveModal() {
-    document.getElementById('leaveModal').classList.remove('active');
-}
-
-
 async function handleLeaveSubmit(e) {
     e.preventDefault();
 
     const leaveId = document.getElementById('leaveId').value;
-    const currentLeave = state.leaves.find(l => l.id == leaveId);
+    const originalData = window.originalLeaveData[leaveId];
 
-    // Only include changed fields
-    const leaveData = {};
-
-    // Get CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-    console.log('CSRF Token for leave update:', !!csrfToken);
-
-    // Helper to check if value changed
-    const getChangedValue = (fieldId, propertyName) => {
-        const input = document.getElementById(fieldId);
-        const newValue = input.value;
-        const oldValue = currentLeave ? currentLeave[propertyName] : null;
-        
-        if (newValue !== (oldValue?.toString() || '')) {
-            return newValue;
-        }
-        return undefined;
-    };
-
-    const type = getChangedValue('editLeaveType', 'type_of_leave');
-    if (type !== undefined) leaveData.type_of_leave = type;
-
-    const start = getChangedValue('editStartLeave', 'start_leave');
-    if (start !== undefined) leaveData.start_leave = start;
-
-    const end = getChangedValue('editEndLeave', 'end_leave');
-    if (end !== undefined) leaveData.end_leave = end;
-
-    const status = getChangedValue('editLeaveStatus', 'status');
-    if (status !== undefined) leaveData.status = status;
-
-    const reason = document.getElementById('rejectionReason').value;
-    if (status === 'rejected' && reason) {
-        leaveData.rejection_reason = reason;
+    if (!originalData) {
+        alert('Error: Original data not found. Please refresh and try again.');
+        return;
     }
 
-    console.log('Updating leave with:', leaveData);
+    // Get the current leave from state
+    const currentLeave = state.leaves.find(l => l.id == leaveId);
+    
+    // Get form values
+    const startDateInput = document.getElementById('editStartLeave').value;
+    const endDateInput = document.getElementById('editEndLeave').value;
+    const typeInput = document.getElementById('editLeaveType').value;
+    const statusInput = document.getElementById('editLeaveStatus').value;
+    const reasonInput = document.getElementById('rejectionReason').value;
+
+    // ALWAYS include ALL required fields with lowercase status
+    const leaveData = {
+        employee_id: currentLeave?.employee?.id || originalData.employee_id,
+        start_leave: startDateInput || originalData.start_leave,
+        end_leave: endDateInput || originalData.end_leave,
+        type_of_leave: typeInput || originalData.type_of_leave,
+        status: (statusInput || originalData.status).toLowerCase(), // CRITICAL: lowercase
+        rejection_reason: reasonInput || originalData.rejection_reason || null
+    };
+
+    console.log('Sending leave data (with lowercase status):', leaveData);
+
+    // Check if any changes were made
+    let hasChanges = false;
+    const changedFields = [];
+    
+    // Helper function for date comparison
+    function compareDates(dateStr1, dateStr2) {
+        if (!dateStr1 && !dateStr2) return true;
+        if (!dateStr1 || !dateStr2) return false;
+        return dateStr1 === dateStr2;
+    }
+    
+    // Compare each field
+    if (!compareDates(leaveData.start_leave, originalData.start_leave)) {
+        hasChanges = true;
+        changedFields.push('start date');
+    }
+    
+    if (!compareDates(leaveData.end_leave, originalData.end_leave)) {
+        hasChanges = true;
+        changedFields.push('end date');
+    }
+    
+    if (leaveData.type_of_leave !== originalData.type_of_leave) {
+        hasChanges = true;
+        changedFields.push('leave type');
+    }
+    
+    // Compare status in lowercase
+    const newStatusLower = leaveData.status.toLowerCase();
+    const oldStatusLower = (originalData.status || '').toLowerCase();
+    if (newStatusLower !== oldStatusLower) {
+        hasChanges = true;
+        changedFields.push('status');
+    }
+    
+    const originalReason = originalData.rejection_reason || '';
+    const newReason = leaveData.rejection_reason || '';
+    if (newReason !== originalReason) {
+        hasChanges = true;
+        changedFields.push('rejection reason');
+    }
+
+    if (!hasChanges) {
+        showNotification('No changes made to leave request', 'info');
+        closeLeaveModal();
+        return;
+    }
+
+    // Show loading
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Updating...';
 
     try {
         const result = await LeaveAPI.update(leaveId, leaveData);
 
-        console.log('Update result:', result);
-
         if (result.success) {
-            alert('Leave request updated successfully!');
+            const changeMessage = changedFields.length > 0 
+                ? `Updated: ${changedFields.join(', ')}`
+                : 'Updated successfully';
+            showNotification(`Leave request ${changeMessage}!`, 'success');
             closeLeaveModal();
             loadLeaves();
         } else {
-            // Handle CSRF/session errors
-            if (result.status === 401 || result.error?.message?.includes('Authentication') || result.error?.message?.includes('CSRF')) {
-                alert('Your session has expired or there\'s a CSRF issue. Please refresh the page and login again.');
-                localStorage.clear();
-                window.location.reload();
+            if (result.status === 422) {
+                const errors = result.data?.errors || {};
+                const errorMessages = Object.values(errors).flat().join('\n');
+                showNotification(`Validation errors:\n${errorMessages}`, 'danger');
+            } else if (result.status === 500) {
+                const errorMsg = result.data?.message || 'Server error occurred';
+                showNotification(`Server error: ${errorMsg}`, 'danger');
             } else {
-                showDetailedError(result.data || result.error);
+                showNotification('Failed to update leave request', 'danger');
             }
         }
     } catch (error) {
         console.error('Error updating leave:', error);
-        alert('Error updating leave request: ' + error.message);
-    }
-}
-
-/**
- * Handle leave status change
- */
-function handleLeaveStatusChange(e) {
-    const reasonGroup = document.getElementById('rejectionReasonGroup');
-    if (e.target.value === 'rejected') {
-        reasonGroup.classList.remove('hidden');
-    } else {
-        reasonGroup.classList.add('hidden');
-    }
-}
-
-/**
- * Handle leave update submission
- */
-async function handleLeaveUpdate(e) {
-    e.preventDefault();
-
-    const id = document.getElementById('leaveId').value;
-    const leaveData = {
-        start_leave: document.getElementById('editStartLeave').value,
-        end_leave: document.getElementById('editEndLeave').value,
-        type_of_leave: document.getElementById('editLeaveType').value,
-        status: document.getElementById('editLeaveStatus').value,
-        rejection_reason: document.getElementById('rejectionReason').value || null
-    };
-
-    // Validate rejection reason if status is rejected
-    if (leaveData.status === 'rejected' && !leaveData.rejection_reason) {
-        alert('Please provide a rejection reason');
-        return;
-    }
-
-    try {
-        const result = await LeaveAPI.update(id, leaveData);
-
-        if (result.success) {
-            closeLeaveModal();
-            loadLeaves();
-            
-            // Reload dashboard if on dashboard section
-            if (state.currentSection === 'dashboard') {
-                loadDashboard();
-            }
-            
-            alert('Leave request updated successfully!');
-        } else {
-            showDetailedError(result.error);
-        }
-    } catch (error) {
-        console.error('Error updating leave:', error);
-        alert('Error updating leave request');
+        showNotification('Error updating leave request: ' + error.message, 'danger');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
     }
 }
 
@@ -262,14 +255,22 @@ window.editLeave = function (id) {
     const leave = state.leaves.find(l => l.id === id);
     if (!leave) return alert("Leave request not found!");
 
+    // Store original data
+    window.originalLeaveData[id] = { 
+        ...leave,
+        start_leave: leave.start_leave,
+        end_leave: leave.end_leave
+    };
+
+    // Populate form - ensure status is lowercase for the select
     document.getElementById('leaveId').value = leave.id;
     document.getElementById('leaveEmpName').value = leave.employee?.name || 'Unknown';
     document.getElementById('editLeaveType').value = leave.type_of_leave;
-    document.getElementById('editStartLeave').value = leave.start_leave;
-    document.getElementById('editEndLeave').value = leave.end_leave;
-    document.getElementById('editLeaveStatus').value = leave.status.toLowerCase();
+    document.getElementById('editStartLeave').value = formatDateForInput(leave.start_leave);
+    document.getElementById('editEndLeave').value = formatDateForInput(leave.end_leave);
+    document.getElementById('editLeaveStatus').value = leave.status.toLowerCase(); // Lowercase!
 
-    // Show/hide rejection reason
+    // Show/hide rejection reason (use lowercase for comparison)
     const reasonGroup = document.getElementById('rejectionReasonGroup');
     if (leave.status.toLowerCase() === 'rejected') {
         reasonGroup.classList.remove('hidden');
@@ -278,38 +279,36 @@ window.editLeave = function (id) {
         reasonGroup.classList.add('hidden');
     }
 
-    // Remove required attributes for edit
-    const form = document.getElementById('leaveForm');
-    const inputs = form.querySelectorAll('[required]');
-    inputs.forEach(input => input.removeAttribute('required'));
-
-    // Show delete button in modal footer (with icon)
+    // Show delete button
     let deleteBtn = document.getElementById('deleteLeaveInModal');
-    const modalFooter = document.querySelector('#leaveModal .modal-footer');
-    
-    if (!deleteBtn) {
-        deleteBtn = document.createElement('button');
-        deleteBtn.type = 'button';
-        deleteBtn.className = 'btn btn-danger btn-sm';
-        deleteBtn.id = 'deleteLeaveInModal';
-        deleteBtn.innerHTML = '🗑️'; // Icon + text
-        deleteBtn.title = 'Delete this leave request';
-        deleteBtn.style.marginRight = 'auto';
-        modalFooter.insertBefore(deleteBtn, modalFooter.firstChild);
+    if (deleteBtn) {
+        deleteBtn.style.display = 'inline-block';
+        deleteBtn.onclick = function() {
+            if (confirm(`Delete leave request for ${leave.employee?.name || 'this employee'}?`)) {
+                deleteLeave(id);
+                closeLeaveModal();
+            }
+        };
     }
-    
-    // Update delete handler for this specific leave
-    deleteBtn.onclick = function() {
-        if (confirm(`Delete leave request for ${leave.employee?.name || 'this employee'}?`)) {
-            deleteLeave(id);
-            closeLeaveModal();
-        }
-    };
-
-    deleteBtn.style.display = 'inline-block';
 
     document.getElementById('leaveModal').classList.add('active');
 };
+
+
+
+/**
+ * Handle leave status change
+ */
+function handleLeaveStatusChange(e) {
+    const reasonGroup = document.getElementById('rejectionReasonGroup');
+    if (e.target.value === 'rejected') {
+        reasonGroup.classList.remove('hidden');
+        document.getElementById('rejectionReason').required = true;
+    } else {
+        reasonGroup.classList.add('hidden');
+        document.getElementById('rejectionReason').required = false;
+    }
+}
 
 /**
  * Delete leave request
@@ -323,14 +322,14 @@ window.deleteLeave = async function(id) {
         const result = await LeaveAPI.delete(id);
 
         if (result.success) {
+            showNotification('Leave request deleted successfully', 'success');
             loadLeaves();
-            alert('Leave request deleted successfully');
         } else {
-            alert('Failed to delete leave request');
+            showNotification('Failed to delete leave request', 'danger');
         }
     } catch (error) {
         console.error('Error deleting leave:', error);
-        alert('Error deleting leave request');
+        showNotification('Error deleting leave request', 'danger');
     }
 };
 

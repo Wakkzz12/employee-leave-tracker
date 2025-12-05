@@ -404,9 +404,10 @@
                     Delete Leave Request
                 </button>
                 <div class="footer-right">
-                    <button type="button" class="btn btn-secondary" onclick="closeLeaveModal()">Cancel</button>
+                    <button type="button" class="btn btn-secondary" id="cancelLeaveBtn">Cancel</button>
                     <button type="submit" class="btn btn-primary">Update Leave</button>
                 </div>
+            </div>
             </div>
         </form>
     </div>
@@ -414,6 +415,7 @@
 
     <!-- JavaScript Modules (Load in order) -->
     <script src="{{ asset('js/config.js') }}"></script>
+    <script src="{{ asset('js/global.js') }}"></script>
     <script src="{{ asset('js/utils.js') }}"></script>
     <script src="{{ asset('js/api.js') }}"></script>
     <script src="{{ asset('js/auth.js') }}"></script>

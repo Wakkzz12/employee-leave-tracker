@@ -59,9 +59,10 @@ class Employee extends Model
      * Restore leave balance if an approved leave is canceled/rejected
      */
     public function restoreLeaveBalance($days)
-    {
+    {   
         $this->leave_balance += $days;
         $this->save();
+        return true;
     }
 
     /**

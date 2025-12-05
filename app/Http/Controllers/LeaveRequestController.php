@@ -92,7 +92,7 @@ class LeaveRequestController extends Controller
     /**
      * Update an existing leave request
      */
-    public function update(LeaveRequestFormRequest $request, $id)
+  public function update(LeaveRequestFormRequest $request, $id)
 {
     try {
         $leave = LeaveRequest::findOrFail($id);
@@ -113,8 +113,9 @@ class LeaveRequestController extends Controller
             $updateData['end_leave'] = $request->end_leave;
         }
         
+        // CRITICAL FIX: Convert to lowercase to match database constraint
         if ($request->has('status')) {
-            $updateData['status'] = ucfirst(strtolower($request->status));
+            $updateData['status'] = strtolower($request->status);
         }
         
         if ($request->has('rejection_reason')) {
@@ -134,15 +135,19 @@ class LeaveRequestController extends Controller
         }
         
         // Handle status change for leave balance
-        $oldStatus = $leave->status;
+        // Note: Use lowercase for comparison
+        $oldStatus = strtolower($leave->status);
         $newStatus = $updateData['status'] ?? $oldStatus;
         
-        if ($newStatus === 'Approved' && $oldStatus !== 'Approved') {
+        if ($newStatus === 'approved' && $oldStatus !== 'approved') {
             $days = $updateData['days_requested'] ?? $leave->days_requested;
             if (!$employee->deductLeaveBalance($days)) {
-                return response()->json(['message' => 'Insufficient leave balance.'], 422);
+                return response()->json([
+                    'message' => 'Insufficient leave balance.',
+                    'errors' => ['balance' => ['Employee has insufficient leave credits.']]
+                ], 422);
             }
-        } elseif ($oldStatus === 'Approved' && $newStatus !== 'Approved') {
+        } elseif ($oldStatus === 'approved' && $newStatus !== 'approved') {
             $employee->restoreLeaveBalance($leave->days_requested);
         }
         
@@ -159,13 +164,13 @@ class LeaveRequestController extends Controller
         ]);
         
     } catch (\Exception $e) {
+        \Log::error('Leave update error: ' . $e->getMessage());
         return response()->json([
             'success' => false,
             'message' => 'Failed to update leave request: ' . $e->getMessage()
         ], 500);
     }
 }
-
     /**
      * Soft delete a leave request
      */

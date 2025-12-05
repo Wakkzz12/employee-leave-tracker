@@ -12,14 +12,14 @@ class DashboardController extends Controller
         try {
             // Ensure case consistency — database usually stores statuses with uppercase initials
             $totalEmployees = Employee::whereNull('deleted_at')->count(); // Only count active employees
-            $totalPending   = LeaveRequest::where('status', 'Pending')->count();
-            $totalApproved  = LeaveRequest::where('status', 'Approved')->count();
-            $totalRejected  = LeaveRequest::where('status', 'Rejected')->count();
+            $totalPending   = LeaveRequest::where('status', 'pending')->count();
+            $totalApproved  = LeaveRequest::where('status', 'approved')->count();
+            $totalRejected  = LeaveRequest::where('status', 'rejected')->count();
 
             // Count soft-deleted only if model uses SoftDeletes trait
             $totalDeleted = method_exists(LeaveRequest::class, 'bootSoftDeletes')
                 ? LeaveRequest::onlyTrashed()->count()
-                : 0;
+                : $totalRejected;
 
             // Load the 10 most recent leave requests with employee relationship
             $recentRequests = LeaveRequest::with('employee')

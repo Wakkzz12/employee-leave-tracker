@@ -156,6 +156,194 @@ function showDetailedError(errorData) {
     
     alert(errorMessage);
 }
+// Add to utils.js
+
+/**
+ * Check if form has changes compared to original data
+ */
+function hasFormChanges(formId, originalData, fieldMappings) {
+    const changes = {};
+    
+    for (const [formField, dataField] of Object.entries(fieldMappings)) {
+        const input = document.getElementById(formField);
+        if (!input) continue;
+        
+        const newValue = input.value;
+        const oldValue = originalData[dataField];
+        
+        // Special handling for dates
+        if (dataField.includes('_date') || dataField.includes('_leave')) {
+            const newDate = newValue ? new Date(newValue).toISOString().split('T')[0] : null;
+            const oldDate = oldValue ? new Date(oldValue).toISOString().split('T')[0] : null;
+            if (newDate !== oldDate) {
+                changes[dataField] = newValue;
+            }
+        } else if (newValue !== (oldValue?.toString() || '')) {
+            changes[dataField] = newValue;
+        }
+    }
+    
+    return changes;
+}
+
+/**
+ * Extract only changed fields from form
+ */
+function extractChangedFields(originalData, fieldConfigs) {
+    const changes = {};
+    
+    fieldConfigs.forEach(config => {
+        const { fieldId, dataField, isDate = false } = config;
+        const input = document.getElementById(fieldId);
+        if (!input) return;
+        
+        const newValue = input.value;
+        const oldValue = originalData[dataField];
+        
+        if (isDate) {
+            const newDate = newValue ? new Date(newValue).toISOString().split('T')[0] : null;
+            const oldDate = oldValue ? new Date(oldValue).toISOString().split('T')[0] : null;
+            if (newDate !== oldDate) {
+                changes[dataField] = newValue || null;
+            }
+        } else if (newValue !== (oldValue?.toString() || '')) {
+            changes[dataField] = newValue || null;
+        }
+    });
+    
+    return changes;
+}
+
+/**
+ * Clear empty values from object
+ */
+function cleanObject(obj) {
+    return Object.fromEntries(
+        Object.entries(obj).filter(([_, value]) => 
+            value !== '' && value !== null && value !== undefined
+        )
+    );
+}
+
+/**
+ * Handle API validation errors
+ */
+function handleValidationErrors(errorData) {
+    if (errorData.errors && typeof errorData.errors === 'object') {
+        const errorMessages = [];
+        Object.values(errorData.errors).forEach(errorArray => {
+            if (Array.isArray(errorArray)) {
+                errorMessages.push(...errorArray);
+            } else {
+                errorMessages.push(errorArray);
+            }
+        });
+        
+        if (errorMessages.length > 0) {
+            return errorMessages.join('\n');
+        }
+    }
+    
+    return errorData.message || 'Validation error occurred';
+}
+
+// utils.js - ADD THESE FUNCTIONS
+
+/**
+ * Compare two values for change detection
+ */
+function valuesChanged(newValue, oldValue, isDate = false) {
+    if (isDate) {
+        const newDate = newValue ? new Date(newValue).toISOString().split('T')[0] : null;
+        const oldDate = oldValue ? new Date(oldValue).toISOString().split('T')[0] : null;
+        return newDate !== oldDate;
+    }
+    
+    // Handle number comparisons
+    if (typeof oldValue === 'number') {
+        const newNum = parseFloat(newValue);
+        return !isNaN(newNum) && newNum !== oldValue;
+    }
+    
+    // Handle string comparisons
+    return newValue !== (oldValue?.toString() || '');
+}
+
+/**
+ * Extract changed fields from form
+ */
+function extractFormChanges(originalData, fieldMappings) {
+    const changes = {};
+    
+    fieldMappings.forEach(mapping => {
+        const { fieldId, dataField, isDate = false, defaultValue = null } = mapping;
+        const input = document.getElementById(fieldId);
+        if (!input) return;
+        
+        const newValue = input.value.trim();
+        const oldValue = originalData[dataField];
+        
+        // Check if value changed
+        if (valuesChanged(newValue, oldValue, isDate)) {
+            // Handle empty values
+            if (newValue === '') {
+                changes[dataField] = defaultValue;
+            } else {
+                changes[dataField] = isDate ? newValue : 
+                                   dataField.includes('credits') ? parseInt(newValue) || 0 : newValue;
+            }
+        }
+    });
+    
+    return changes;
+}
+
+/**
+ * Show notification message
+ */
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification alert-${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 12px 20px;
+        border-radius: 4px;
+        background: ${type === 'success' ? '#d4edda' : 
+                     type === 'error' ? '#f8d7da' : 
+                     type === 'warning' ? '#fff3cd' : '#d1ecf1'};
+        color: ${type === 'success' ? '#155724' : 
+                type === 'error' ? '#721c24' : 
+                type === 'warning' ? '#856404' : '#0c5460'};
+        border: 1px solid ${type === 'success' ? '#c3e6cb' : 
+                          type === 'error' ? '#f5c6cb' : 
+                          type === 'warning' ? '#ffeaa7' : '#bee5eb'};
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        min-width: 300px;
+        max-width: 400px;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="background: none; border: none; font-size: 20px; cursor: pointer; color: inherit;">&times;</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
 
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
@@ -168,6 +356,12 @@ if (typeof module !== 'undefined' && module.exports) {
         isValidEmailDomain,
         validateFile,
         capitalize,
-        showDetailedError
+        showDetailedError,
+        hasFormChanges,
+        extractChangedFields,
+        cleanObject,
+        handleValidationErrors,
+        extractFormChanges,
+        showNotification 
     };
 }

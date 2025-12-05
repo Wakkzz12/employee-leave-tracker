@@ -10,11 +10,22 @@ async function loadDashboard() {
         const result = await DashboardAPI.getStats();
         console.log('Dashboard API result:', result);
 
+        // DEBUG: Show the full data structure
+        if (result.success && result.data) {
+            console.log('Full dashboard data structure:', JSON.stringify(result.data, null, 2));
+            
+            // Check all possible keys
+            console.log('Available keys:', Object.keys(result.data));
+            
+            // Check if it's nested
+            if (result.data.data) {
+                console.log('Nested data found:', result.data.data);
+            }
+        }
+
         if (!result.success) {
             if (result.status === 401) {
                 console.error('401 Unauthorized - Session may have expired');
-                // Show error but don't redirect immediately
-                // Try to reload the page to establish session again
                 alert('Session error. Please wait...');
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 location.reload();
@@ -35,7 +46,6 @@ async function loadDashboard() {
 
     } catch (error) {
         console.error('Error loading dashboard:', error);
-        // Show empty state instead of redirecting
         document.getElementById('recentRequests').innerHTML = `
             <div class="empty-state">
                 <h3>Error Loading Data</h3>
@@ -49,10 +59,23 @@ async function loadDashboard() {
  * Update dashboard statistics cards
  */
 function updateDashboardStats(data) {
+    console.log('Dashboard stats data received:', data);
+    
+    // Direct mapping - your API returns these exact keys
     document.getElementById('totalEmployees').textContent = data.totalEmployees || 0;
     document.getElementById('totalPending').textContent = data.totalPending || 0;
     document.getElementById('totalApproved').textContent = data.totalApproved || 0;
-    document.getElementById('totalDeleted').textContent = data.totalDeleted || 0;
+    
+    // Use totalDeleted if available, otherwise use totalRejected
+    document.getElementById('totalDeleted').textContent = 
+        data.totalDeleted || data.totalRejected || 0;
+    
+    console.log('Updated dashboard with:', {
+        employees: data.totalEmployees || 0,
+        pending: data.totalPending || 0,
+        approved: data.totalApproved || 0,
+        deleted: data.totalDeleted || data.totalRejected || 0
+    });
 }
 
 /**

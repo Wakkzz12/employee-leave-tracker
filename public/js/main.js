@@ -1,11 +1,12 @@
-// main.js - Main Application Entry Point
 
-/**
- * Initialize the application
- */
-/**
- * Initialize the application
- */
+//global functions to be accessible in HTML
+window.closeLeaveModal = closeLeaveModal;
+window.closeEmployeeModal = closeEmployeeModal;
+window.editLeave = editLeave;
+window.editEmployee = editEmployee;
+window.deleteLeave = deleteLeave;
+window.deleteEmployee = deleteEmployee;
+
 function initApp() {
     console.log('Initializing Employee Leave Tracker System...');
     
@@ -58,6 +59,50 @@ function initApp() {
             setTimeout(initApp, 50);
         });
 
+// Global modal functions
+window.closeLeaveModal = function() {
+    const modal = document.getElementById('leaveModal');
+    if (modal) {
+        modal.classList.remove('active');
+        
+        // Reset form
+        const form = document.getElementById('leaveForm');
+        if (form) {
+            form.reset();
+        }
+        
+        // Hide delete button
+        const deleteBtn = document.getElementById('deleteLeaveInModal');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'none';
+        }
+        
+        // Reset modal title if changed
+        const modalTitle = document.querySelector('#leaveModal h2');
+        if (modalTitle && modalTitle.textContent !== 'Edit Leave Request') {
+            modalTitle.textContent = 'Edit Leave Request';
+        }
+    }
+};
+
+window.closeEmployeeModal = function() {
+    const modal = document.getElementById('employeeModal');
+    if (modal) {
+        modal.classList.remove('active');
+        
+        // Reset form
+        const form = document.getElementById('employeeForm');
+        if (form) {
+            form.reset();
+        }
+        
+        // Hide delete button
+        const deleteBtn = document.getElementById('deleteEmployeeInModal');
+        if (deleteBtn) {
+            deleteBtn.style.display = 'none';
+        }
+    }
+};
 /**
  * Global error handler
  */
