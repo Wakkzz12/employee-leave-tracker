@@ -345,6 +345,39 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
+// In utils.js - update extractFormChanges function
+function extractFormChanges(originalData, fieldMappings) {
+    const changes = {};
+    
+    fieldMappings.forEach(mapping => {
+        const { fieldId, dataField, isDate = false, isNumber = false } = mapping;
+        const input = document.getElementById(fieldId);
+        if (!input) return;
+        
+        const newValue = input.value.trim();
+        const oldValue = originalData[dataField];
+        
+        // Check if value changed
+        if (isDate) {
+            const newDate = newValue ? new Date(newValue).toISOString().split('T')[0] : null;
+            const oldDate = oldValue ? new Date(oldValue).toISOString().split('T')[0] : null;
+            if (newDate !== oldDate) {
+                changes[dataField] = newValue || null;
+            }
+        } else if (isNumber) {
+            const newNum = newValue ? parseInt(newValue) || 0 : 0;
+            const oldNum = oldValue ? parseInt(oldValue) : 0;
+            if (newNum !== oldNum) {
+                changes[dataField] = newNum; // Send as number, not string
+            }
+        } else if (newValue !== (oldValue?.toString() || '')) {
+            changes[dataField] = newValue || null;
+        }
+    });
+    
+    return changes;
+}
+
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
@@ -362,6 +395,7 @@ if (typeof module !== 'undefined' && module.exports) {
         cleanObject,
         handleValidationErrors,
         extractFormChanges,
-        showNotification 
+        showNotification,
+        extractFormChanges
     };
 }

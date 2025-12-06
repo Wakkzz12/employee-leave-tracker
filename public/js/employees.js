@@ -192,7 +192,7 @@ async function handleEmployeeSubmit(e) {
         { fieldId: 'empPosition', dataField: 'position', isDate: false },
         { fieldId: 'empStartDate', dataField: 'started_date', isDate: true },
         { fieldId: 'empEndDate', dataField: 'end_date', isDate: true },
-        { fieldId: 'empLeaveBalance', dataField: 'leave_balance', isDate: false },
+        { fieldId: 'empLeaveBalance', dataField: 'leave_balance', isDate: false, isNumber: true }, // ADDED isNumber
         { fieldId: 'empStatus', dataField: 'status', isDate: false }
     ];
 
@@ -219,9 +219,12 @@ async function handleEmployeeSubmit(e) {
         employeeFieldMappings.forEach(mapping => {
             const input = document.getElementById(mapping.fieldId);
             if (input && input.value.trim() !== '') {
-                employeeData[mapping.dataField] = mapping.dataField.includes('credits') 
-                    ? parseInt(input.value) || 15 
-                    : input.value.trim();
+                if (mapping.isNumber) {
+                    // Convert to integer for number fields
+                    employeeData[mapping.dataField] = parseInt(input.value) || 0;
+                } else {
+                    employeeData[mapping.dataField] = input.value.trim();
+                }
             }
         });
         
@@ -255,10 +258,18 @@ async function handleEmployeeSubmit(e) {
             closeEmployeeModal();
             loadEmployees();
         } else {
-            // Handle validation errors
-            if (result.status === 422 && result.data && result.data.errors) {
-                const errorMessages = Object.values(result.data.errors).flat().join('\n');
-                showNotification('Validation errors:\n' + errorMessages, 'error');
+            // Handle validation errors - SHOW THE ACTUAL ERROR
+            if (result.status === 422 && result.data) {
+                console.error('Validation error details:', result.data);
+                
+                if (result.data.errors) {
+                    const errorMessages = Object.values(result.data.errors).flat().join('\n');
+                    showNotification('Validation errors:\n' + errorMessages, 'error');
+                } else if (result.data.message) {
+                    showNotification('Error: ' + result.data.message, 'error');
+                } else {
+                    showNotification('Validation failed', 'error');
+                }
             } else if (result.error?.message) {
                 showNotification(result.error.message, 'error');
             } else {
@@ -274,7 +285,6 @@ async function handleEmployeeSubmit(e) {
         submitBtn.textContent = originalBtnText;
     }
 }
-
 /**
  * Close employee modal
  */

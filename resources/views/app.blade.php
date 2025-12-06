@@ -315,8 +315,8 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label for="empLeaveCredits">Leave Credits</label>
-                        <input type="number" id="empLeaveCredits" class="form-control" min="0" value="15">
+                        <label for="empLeaveBalance">Leave Balance</label>
+                        <input type="number" id="empLeaveBalance" class="form-control" min="0" value="15">
                     </div>
                     <div class="form-group col-md-6">
                         <label for="empStatus">Status</label>

@@ -190,7 +190,6 @@ async update(id, employeeData) {
     try {
         console.log(`Updating employee ${id} with data:`, employeeData);
         
-        // Get CSRF token
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
         
         if (!csrfToken) {
@@ -201,14 +200,23 @@ async update(id, employeeData) {
             };
         }
         
-        // Clean data - remove empty strings
-        const cleanData = Object.fromEntries(
-            Object.entries(employeeData).filter(([_, value]) => 
-                value !== '' && value !== null && value !== undefined
-            )
-        );
+        // Clean and convert data
+        const cleanData = {};
+        Object.entries(employeeData).forEach(([key, value]) => {
+            if (value !== '' && value !== null && value !== undefined) {
+                // Convert number fields
+                if (key === 'leave_balance' || key.includes('credits') || key.includes('balance')) {
+                    cleanData[key] = parseInt(value) || 0;
+                } else if (key.includes('_date') || key.includes('date')) {
+                    // Ensure date format
+                    cleanData[key] = value;
+                } else {
+                    cleanData[key] = value;
+                }
+            }
+        });
         
-        console.log('Cleaned employee data:', cleanData);
+        console.log('Cleaned and converted employee data:', cleanData);
         
         const response = await fetch(`${CONFIG.API_URL}/employees/${id}`, {
             method: 'PUT',
@@ -222,27 +230,21 @@ async update(id, employeeData) {
             body: JSON.stringify(cleanData)
         });
         
+        // Get the raw response to debug
+        const responseText = await response.text();
+        console.log('Raw API response:', responseText);
+        
         let data;
-        const text = await response.text();
-        
-        // Check for HTML response (login page)
-        if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-            return {
-                success: false,
-                error: { message: 'Authentication issue. Please refresh.' },
-                status: 401
-            };
-        }
-        
-        // Parse JSON
         try {
-            data = JSON.parse(text);
+            data = JSON.parse(responseText);
         } catch (e) {
-            data = { message: 'Invalid JSON response' };
+            console.error('Failed to parse JSON:', e);
+            data = { message: 'Invalid JSON response', raw: responseText.substring(0, 200) };
         }
         
         // Handle validation errors
         if (response.status === 422) {
+            console.error('Validation error:', data);
             return {
                 success: false,
                 data: data,
