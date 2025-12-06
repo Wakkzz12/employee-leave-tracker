@@ -91,7 +91,7 @@ function renderLeavesTable() {
                     <th>Start Date</th>
                     <th>End Date</th>
                     <th>Days</th>
-                    <th>Remaining Credits</th>
+                    <th>Remaining Balance</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -157,7 +157,7 @@ async function handleLeaveSubmit(e) {
         start_leave: startDateInput || originalData.start_leave,
         end_leave: endDateInput || originalData.end_leave,
         type_of_leave: typeInput || originalData.type_of_leave,
-        status: (statusInput || originalData.status).toLowerCase(), // CRITICAL: lowercase
+        status: (statusInput || originalData.status).toLowerCase(),
         rejection_reason: reasonInput || originalData.rejection_reason || null
     };
 

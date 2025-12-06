@@ -1,5 +1,3 @@
-// employees.js - UPDATED VERSION
-
 // Store original employee data for change detection
 window.originalEmployeeData = {};
 
@@ -89,7 +87,7 @@ function renderEmployeesTable() {
                     <th>Position</th>
                     <th>Start Date</th>
                     <th>Status</th>
-                    <th>Credits</th>
+                    <th>Leave Balance</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -112,7 +110,7 @@ function createEmployeeRow(emp) {
             <td>${emp.position || '-'}</td>
             <td>${formatDate(emp.started_date)}</td>
             <td><span class="badge badge-${emp.status}">${emp.status.toUpperCase()}</span></td>
-            <td>${emp.leave_credits || 0} days</td>
+            <td>${emp.leave_balance || 0} days</td>
             <td>
                 <button class="btn btn-warning btn-sm" onclick="editEmployee(${emp.id})">Edit</button>
             </td>
@@ -158,7 +156,7 @@ window.editEmployee = function (id) {
     document.getElementById('empPosition').value = emp.position || '';
     document.getElementById('empStartDate').value = formatDateForInput(emp.started_date);
     document.getElementById('empEndDate').value = formatDateForInput(emp.end_date);
-    document.getElementById('empLeaveCredits').value = emp.leave_credits || 15;
+    document.getElementById('empLeaveBalance').value = emp.leave_balance || 15;
     document.getElementById('empStatus').value = emp.status || 'regular';
 
     // Show delete button
@@ -194,7 +192,7 @@ async function handleEmployeeSubmit(e) {
         { fieldId: 'empPosition', dataField: 'position', isDate: false },
         { fieldId: 'empStartDate', dataField: 'started_date', isDate: true },
         { fieldId: 'empEndDate', dataField: 'end_date', isDate: true },
-        { fieldId: 'empLeaveCredits', dataField: 'leave_credits', isDate: false },
+        { fieldId: 'empLeaveBalance', dataField: 'leave_balance', isDate: false },
         { fieldId: 'empStatus', dataField: 'status', isDate: false }
     ];
 

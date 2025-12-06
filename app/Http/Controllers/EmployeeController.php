@@ -80,7 +80,7 @@ class EmployeeController extends Controller
             'position' => 'nullable|string|max:100',
             'started_date' => 'required|date',
             'end_date' => 'nullable|date',
-            'leave_credits' => 'required|integer|min:0',
+            'leave_balance' => 'required|integer|min:0',
             'status' => 'required|in:regular,permanent,contractual,resigned,terminated,awol,retired'
         ]);
         
@@ -110,7 +110,7 @@ class EmployeeController extends Controller
     }
     
     public function update(Request $request, $id)
-{
+    {
     try {
         $employee = Employee::findOrFail($id);
         
@@ -141,7 +141,7 @@ class EmployeeController extends Controller
             $rules['end_date'] = 'nullable|date';
         }
         
-        if ($request->has('leave_credits')) {
+        if ($request->has('leave_balance')) {
             $rules['leave_credits'] = 'required|integer|min:0';
         }
         
@@ -162,7 +162,7 @@ class EmployeeController extends Controller
         // Update only fields that are present in the request
         $employee->fill($request->only([
             'employee_id', 'name', 'department', 'position', 
-            'started_date', 'end_date', 'leave_credits', 'status'
+            'started_date', 'end_date', 'leave_balance', 'status'
         ]));
         
         $employee->save();

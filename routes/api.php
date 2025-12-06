@@ -6,12 +6,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LeaveRequestController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes for Blade Frontend (Session-Based Auth)
-|--------------------------------------------------------------------------
-*/
-
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

@@ -116,7 +116,7 @@ function createEmployeeCard(emp) {
     return `
         <div class="employee-card" onclick="selectEmployee(${emp.id})">
             <h4>${emp.name}</h4>
-            <p>ID: ${emp.employee_id} | Leave Credits: ${emp.leave_credits} days</p>
+            <p>ID: ${emp.employee_id} | Leave Balance: ${emp.leave_balance} days</p>
         </div>
     `;
 }
@@ -141,7 +141,7 @@ window.selectEmployee = function(id) {
     document.getElementById('selectedEmployeeId').value = employee.id;
     document.getElementById('selectedEmployeeCard').innerHTML = `
         <h4>${employee.name || 'Unknown'}</h4>
-        <p>ID: ${employee.employee_id || 'N/A'} | Leave Credits: ${employee.leave_credits || 0} days | Status: ${employee.status || 'Unknown'}</p>
+        <p>ID: ${employee.employee_id || 'N/A'} | Leave Balance: ${employee.leave_balance || 0} days | Status: ${employee.status || 'Unknown'}</p>
     `;
     
     // Clear search
@@ -206,6 +206,10 @@ async function handleLeaveRequestSubmit(e) {
         return;
     }
 
+    if(selectEmployee.leave_balance <= 0) {
+        alert('Insufficient leave balance');
+        return;
+    }
     // Create FormData
     const formData = new FormData();
     formData.append('employee_id', employeeId);

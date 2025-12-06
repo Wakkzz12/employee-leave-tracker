@@ -11,13 +11,13 @@ class Employee extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'employee_id',     // 👈 must include this
+        'employee_id', 
         'name',
         'department',
         'position',
         'started_date',
         'end_date',
-        'leave_credits',   // 👈 must include this
+        'leave_balance',   
         'status',
     ];
 

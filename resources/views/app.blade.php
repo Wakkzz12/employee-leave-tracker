@@ -245,7 +245,7 @@
                 <div class="content-card">
                     <div class="card-header">
                         <h2>Deleted Employees</h2>
-                            <p class="card-subtitle">Employees that were soft-deleted from the system</p>
+                            <p class="card-subtitle">Deleted employees can be back or force-delete</p>
                         </div>
                     <div id="deletedEmployeesTable"></div>
                 </div>
