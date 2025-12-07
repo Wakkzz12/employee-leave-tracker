@@ -115,7 +115,7 @@ function createLeaveRow(leave) {
             <td>${formatDate(leave.start_leave)}</td>
             <td>${formatDate(leave.end_leave)}</td>
             <td>${leave.days_requested}</td>
-            <td>${leave.remaining_credits}</td>
+            <td>${leave.remaining_credits} days</td>
             <td><span class="badge badge-${leave.status}">${leave.status.toUpperCase()}</span></td>
             <td>
                 <div class="action-buttons">

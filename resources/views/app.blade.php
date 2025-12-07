@@ -251,25 +251,32 @@
                 </div>
             </div>
 
-            <!-- Employee History Section -->
             <div id="employeeHistorySection" class="section hidden">
                 <div class="content-card">
                     <div class="card-header">
                         <h2>Employee Leave History</h2>
                     </div>
-                    <div class="employee-search">
+                    
+                    <div class="employee-search" style="position: relative;">
                         <div class="form-group">
-                            <label>Select Employee</label>
-                            <select id="historyEmployeeSelect" class="form-control">
-                                <option value="">Choose an employee</option>
-                            </select>
+                            <label>Search Employee</label>
+                            <input 
+                                type="text" 
+                                id="historyEmployeeSearch" 
+                                class="form-control" 
+                                placeholder="Search employee by name or ID..."
+                                autocomplete="off"
+                            >
                         </div>
+                        
+                        <div id="historySearchResults" class="search-results"></div>
                     </div>
+                    
+                    <div id="historySelectedEmployeeContainer" style="display:none; margin-top: 10px;">
+                        </div>
                     <div id="historyResults"></div>
                 </div>
             </div>
-        </div>
-    </div>
 
    <!-- Add/Edit Employee Modal -->
 <div id="employeeModal" class="modal">

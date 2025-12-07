@@ -4,12 +4,15 @@
  * Initialize history functionality
  */
 function initHistory() {
-    // Employee history select
-    document.getElementById('historyEmployeeSelect').addEventListener('change', handleEmployeeHistorySelect);
+    // REPLACED: Employee select with Search Input Listener
+    const searchInput = document.getElementById('historyEmployeeSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', handleHistorySearch);
+    }
 }
 
 /**
- * Load deleted leaves and history
+ * Load deleted leaves and history (Unchanged)
  */
 async function loadDeletedLeaves() {
     try {
@@ -28,7 +31,7 @@ async function loadDeletedLeaves() {
 }
 
 /**
- * Render deleted leaves and history table
+ * Render deleted leaves and history table (Unchanged)
  */
 function renderDeletedLeavesTable(data) {
     const container = document.getElementById('deletedLeavesTable');
@@ -53,7 +56,7 @@ function renderDeletedLeavesTable(data) {
 }
 
 /**
- * Render deleted leaves section
+ * Render deleted leaves section (Unchanged)
  */
 function renderDeletedLeavesSection(deletedLeaves) {
     return `
@@ -85,7 +88,7 @@ function renderDeletedLeavesSection(deletedLeaves) {
 }
 
 /**
- * Render all history table
+ * Render all history table (Unchanged)
  */
 function renderHistoryTable(allHistory) {
     return `
@@ -117,41 +120,114 @@ function renderHistoryTable(allHistory) {
 }
 
 /**
- * Load employee history section
+ * Load employee data for search
+ * REFACTORED: We only need to fetch the data, we don't build a <select> anymore.
  */
 async function loadEmployeeHistorySection() {
     // Load employees if not already loaded
-    if (state.employees.length === 0) {
+    if (!state.employees || state.employees.length === 0) {
         try {
             const result = await EmployeeAPI.getAll();
             if (result.success) {
                 state.employees = result.data;
+                console.log('Employees loaded for history search');
             }
         } catch (error) {
             console.error('Error loading employees:', error);
-            return;
         }
     }
-
-    // Populate employee select dropdown
-    const select = document.getElementById('historyEmployeeSelect');
-    select.innerHTML = '<option value="">Choose an employee</option>' + 
-        state.employees.map(emp => 
-            `<option value="${emp.id}">${emp.name} (${emp.employee_id})</option>`
-        ).join('');
 }
 
 /**
- * Handle employee history select change
+ * NEW: Handle History Search Input
  */
-async function handleEmployeeHistorySelect(e) {
-    const employeeId = e.target.value;
-    const container = document.getElementById('historyResults');
+function handleHistorySearch(e) {
+    const search = e.target.value.toLowerCase().trim();
+    const results = document.getElementById('historySearchResults');
+    const resultsContainer = document.getElementById('historyResults'); // The table container
     
-    if (!employeeId) {
-        container.innerHTML = '';
+    // Clear the table container when user starts typing new search
+    if (search.length > 0) {
+        resultsContainer.innerHTML = '';
+        document.getElementById('historySelectedEmployeeContainer').style.display = 'none';
+    }
+
+    if (search.length < 2) {
+        results.innerHTML = '';
         return;
     }
+
+    // SAFETY CHECK
+    if (!state.employees || !Array.isArray(state.employees)) {
+        results.innerHTML = '<p style="color: var(--danger); padding: 10px;">Error: Employee data not loaded</p>';
+        return;
+    }
+
+    const filtered = state.employees.filter(emp => {
+        if (!emp) return false;
+        const empId = emp.employee_id ? emp.employee_id.toLowerCase() : '';
+        const empName = emp.name ? emp.name.toLowerCase() : '';
+        return empId.includes(search) || empName.includes(search);
+    });
+
+    if (filtered.length === 0) {
+        results.innerHTML = '<p style="color: var(--secondary); padding: 10px;">No employees found</p>';
+    } else {
+        // We use selectHistoryEmployee() here
+        results.innerHTML = filtered.map(emp => createHistoryEmployeeCard(emp)).join('');
+    }
+}
+
+/**
+ * NEW: Create Card HTML
+ */
+function createHistoryEmployeeCard(emp) {
+    return `
+        <div class="employee-card" onclick="selectHistoryEmployee(${emp.id})">
+            <h4 style="margin:0;">${emp.name}</h4>
+            <small style="color: #666;">ID: ${emp.employee_id} | Balance: ${emp.leave_balance || 0} days</small>
+        </div>
+    `;
+}
+
+/**
+ * NEW: Handle Selection of Employee
+ * Exposed to window so the onclick in HTML works
+ */
+window.selectHistoryEmployee = async function(id) {
+    const searchInput = document.getElementById('historyEmployeeSearch');
+    const results = document.getElementById('historySearchResults');
+    const selectedContainer = document.getElementById('historySelectedEmployeeContainer');
+
+    // 1. Find the employee object
+    const employee = state.employees.find(e => e.id === id);
+    if (!employee) return;
+
+    // 2. Update Search Input visually
+    searchInput.value = employee.name;
+    results.innerHTML = ''; // Clear dropdown
+
+    // 3. Show selected feedback (Optional but good UX)
+    selectedContainer.innerHTML = `
+        <div style="padding: 10px; background: #e3f2fd; border-radius: 5px; color: #0d47a1;">
+            Selected: <strong>${employee.name}</strong> (${employee.employee_id})
+        </div>
+    `;
+    selectedContainer.style.display = 'block';
+
+    // 4. Load the actual data
+    await loadEmployeeHistoryById(id);
+}
+
+/**
+ * REFACTORED: Fetch and Render Logic
+ * Separated from the event handler so it's cleaner
+ */
+async function loadEmployeeHistoryById(employeeId) {
+    const container = document.getElementById('historyResults');
+    
+    // Show loading state
+    container.innerHTML = '<p style="text-align:center; padding: 20px;">Loading history...</p>';
 
     try {
         const result = await LeaveAPI.getEmployeeHistory(employeeId);
@@ -174,7 +250,7 @@ async function handleEmployeeHistorySelect(e) {
 }
 
 /**
- * Render employee history
+ * Render employee history (Unchanged)
  */
 function renderEmployeeHistory(data) {
     const container = document.getElementById('historyResults');
@@ -193,7 +269,7 @@ function renderEmployeeHistory(data) {
         <div style="background: var(--light); padding: 20px; border-radius: 10px; margin: 20px 0;">
             <h3>${data.employee.name}</h3>
             <p>Employee ID: ${data.employee.employee_id}</p>
-            <p>Current Leave Credits: ${data.employee.leave_credits} days</p>
+            <p>Current Leave Credits: ${data.employee.leave_balance} days</p>
             <p>Status: <span class="badge badge-${data.employee.status}">${data.employee.status.toUpperCase()}</span></p>
         </div>
         <table>

@@ -655,3 +655,6 @@
             cursor: pointer;
             color: #666;
         }
+        .search-results:not(:empty) {
+            display: block; /* Show when has content */
+        }
