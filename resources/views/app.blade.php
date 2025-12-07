@@ -75,8 +75,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-logo">
-                <h2>Leave Tracker System</h2>
-                <p>AsiaPro Butuan</p>
+                <image src="{{ asset(('images/Asiapro-Horizontal-4.png')) }}" alt="AsiaPro Butuan Logo" />
             </div>
             <div class="nav-item active" data-section="dashboard">
                 <span>Dashboard</span>

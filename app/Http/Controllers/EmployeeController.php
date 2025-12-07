@@ -32,7 +32,6 @@ class EmployeeController extends Controller
                 'data' => $deletedEmployees,
                 'count' => $deletedEmployees->count()
             ]);
-            
         } catch (\Exception $e) {
             \Log::error('Error in deleted(): ' . $e->getMessage());
             

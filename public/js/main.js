@@ -103,6 +103,7 @@ window.closeEmployeeModal = function() {
         }
     }
 };
+
 /**
  * Global error handler
  */

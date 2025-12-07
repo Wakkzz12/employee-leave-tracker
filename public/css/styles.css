@@ -18,7 +18,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #282aa8,  #e0e7ff);
             min-height: 100vh;
             color: var(--dark);
         }
@@ -33,12 +33,12 @@
         }
 
         .auth-card {
-            background: white;
+            background: linear-gradient(0deg, #362fa0 10%, white 40%);
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 50px;
-            width: 100%;
-            max-width: 450px;
+            padding: 40px;
+            width: 50%;
+            max-width: 370px;
             animation: slideUp 0.5s ease;
         }
 
@@ -180,19 +180,11 @@
         }
 
         .sidebar-logo {
-            padding: 0 30px;
-            margin-bottom: 40px;
+            padding: 0;
         }
-
-        .sidebar-logo h2 {
-            color: var(--primary);
-            font-size: 22px;
-        }
-
-        .sidebar-logo p {
-            color: var(--secondary);
-            font-size: 13px;
-            margin-top: 5px;
+        .sidebar-logo img {
+            max-width: 230px;
+            height: auto;
         }
 
         .nav-item {
