@@ -38,8 +38,11 @@ async function apiRequest(url, options = {}) {
         'X-CSRF-TOKEN': csrfToken
     };
 
+    const method = options.method || 'GET';
+
     const config = {
-        credentials: 'include', // Important for session cookies
+        credentials: 'include', 
+        method: method,
         ...options,
         headers: {
             ...defaultHeaders,
@@ -50,6 +53,7 @@ async function apiRequest(url, options = {}) {
     // For FormData, remove Content-Type header (browser will set it)
     if (options.body && options.body instanceof FormData) {
         delete config.headers['Content-Type'];
+        delete config.headers['X-CSRF-TOKEN']; 
     }
 
     console.log(`API Request to: ${url}`, { 
@@ -162,7 +166,9 @@ const AuthAPI = {
  */
 const DashboardAPI = {
     async getStats() {
-        return await apiRequest(`${CONFIG.API_URL}/dashboard`);
+        return await apiRequest(`${CONFIG.API_URL}/dashboard`, {
+            method: 'GET'
+        });
     }
 };
 
@@ -171,11 +177,15 @@ const DashboardAPI = {
  */
 const EmployeeAPI = {
     async getAll() {
-        return await apiRequest(`${CONFIG.API_URL}/employees`);
+        return await apiRequest(`${CONFIG.API_URL}/employees`, {
+            method: 'GET'
+            });
     },
 
     async getById(id) {
-        return await apiRequest(`${CONFIG.API_URL}/employees/${id}`);
+        return await apiRequest(`${CONFIG.API_URL}/employees/${id}`, {
+            method: 'GET'   
+        });
     },
 
     async create(employeeData) {
@@ -186,7 +196,7 @@ const EmployeeAPI = {
     },
 
     // In api.js - Update EmployeeAPI.update method
-async update(id, employeeData) {
+    async update(id, employeeData) {
     try {
         console.log(`Updating employee ${id} with data:`, employeeData);
         
@@ -327,7 +337,9 @@ async update(id, employeeData) {
  */
 const LeaveAPI = {
     async getAll() {
-        return await apiRequest(`${CONFIG.API_URL}/leave-requests`);
+        return await apiRequest(`${CONFIG.API_URL}/leave-requests`, {
+            method: 'GET'
+        });
     },
 
     async create(formData) {
@@ -524,11 +536,15 @@ async update(id, leaveData) {
     },
 
     async getHistory() {
-        return await apiRequest(`${CONFIG.API_URL}/leave-requests/history`);
+        return await apiRequest(`${CONFIG.API_URL}/leave-requests/history`, {
+            method: 'GET'
+        });
     },
 
     async getEmployeeHistory(employeeId) {
-        return await apiRequest(`${CONFIG.API_URL}/leave-requests/employee/${employeeId}`);
+        return await apiRequest(`${CONFIG.API_URL}/leave-requests/employee/${employeeId}`, {
+            method: 'GET'
+        });
     }
 };
 
