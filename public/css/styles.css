@@ -513,8 +513,9 @@
         }
 
         .action-buttons {
-            display: flex;
-            gap: 10px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .empty-state {

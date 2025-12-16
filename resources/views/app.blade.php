@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Employee Leave Tracker - AsiaPro Butuan</title>
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-</head>
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 <body>
     <!-- Login Screen -->
     <div id="loginScreen" class="auth-container">

@@ -427,10 +427,15 @@ async function loadDeletedEmployees() {
                             <td>${emp.position || '-'}</td>
                             <td><span class="badge badge-${emp.status || 'deleted'}">${(emp.status || 'deleted').toUpperCase()}</span></td>
                             <td>${emp.deleted_at ? formatDateTime(emp.deleted_at) : 'Unknown'}</td>
-                            <td>
-                                <button class="btn btn-success btn-sm" onclick="restoreEmployee(${emp.id})">Restore</button>
-                                <button class="btn btn-danger btn-sm" onclick="forceDeleteEmployee(${emp.id})">Delete Forever</button>
+                            <td class="text-center" style="white-space: nowrap;">
+                                <button class="btn btn-success btn-sm me-1" onclick="restoreEmployee({{ $emp->id }})">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="forceDeleteEmployee({{ $emp->id }})">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
                             </td>
+
                         </tr>
                         `;
                     }).join('')}

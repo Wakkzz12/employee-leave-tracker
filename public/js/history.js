@@ -190,10 +190,7 @@ function createHistoryEmployeeCard(emp) {
     `;
 }
 
-/**
- * NEW: Handle Selection of Employee
- * Exposed to window so the onclick in HTML works
- */
+
 window.selectHistoryEmployee = async function(id) {
     const searchInput = document.getElementById('historyEmployeeSearch');
     const results = document.getElementById('historySearchResults');
@@ -219,10 +216,7 @@ window.selectHistoryEmployee = async function(id) {
     await loadEmployeeHistoryById(id);
 }
 
-/**
- * REFACTORED: Fetch and Render Logic
- * Separated from the event handler so it's cleaner
- */
+
 async function loadEmployeeHistoryById(employeeId) {
     const container = document.getElementById('historyResults');
     
