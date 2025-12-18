@@ -491,10 +491,6 @@
     </div>
 </div>
 
-    <!-- Footer -->
-    <footer class="app-footer">
-    © <span id="currentYear"></span> AsiaPro Butuan. All rights reserved.
-</footer>
 
     <!-- JavaScript Modules (Load in order) -->
     <script src="{{ asset('js/config.js') }}"></script>

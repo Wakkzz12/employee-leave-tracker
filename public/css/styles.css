@@ -691,3 +691,4 @@
         .search-results:not(:empty) {
             display: block; /* Show when has content */
         }
+        
