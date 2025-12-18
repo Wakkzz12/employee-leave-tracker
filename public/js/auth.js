@@ -18,6 +18,12 @@ function initAuth() {
     
     // Handle logout
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+
+    // Initialize password visibility toggle
+    initPasswordToggle('toggleLoginPassword', 'loginPassword');
+    initPasswordToggle('toggleRegisterPassword', 'registerPassword');
+    initPasswordToggle('toggleRegisterPasswordConfirm', 'registerPasswordConfirm');
+
 }
 
 /**
@@ -173,6 +179,22 @@ function checkAuth() {
         loadDashboard();
     }
 }
+
+function initPasswordToggle(toggleId, inputId) {
+    const toggle = document.getElementById(toggleId);
+    const input = document.getElementById(inputId);
+
+    if (!toggle || !input) return;
+
+    toggle.addEventListener('click', () => {
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+
+        toggle.classList.toggle('bi-eye');
+        toggle.classList.toggle('bi-eye-slash');
+    });
+}
+
 
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {

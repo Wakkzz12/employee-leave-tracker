@@ -9,66 +9,138 @@
    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 <body>
     <!-- Login Screen -->
-    <div id="loginScreen" class="auth-container">
+<div id="loginScreen" class="auth-container">
+
+    <!-- LEFT SIDE (LOGO / IMAGE) -->
+    <div class="auth-left">
+        <img src="{{ asset('images/Asiapro-Horizontal-4.png') }}" alt="AsiaPro Logo" class="left-logo">
+    </div>
+
+    <!-- RIGHT SIDE (AUTH CARD) -->
+    <div class="auth-right">
         <div class="auth-card">
             <div class="auth-logo">
                 <h1>Leave Tracker System</h1>
                 <p>For AsiaPro Butuan Employees</p>
             </div>
+
             <div id="loginError" class="error-message hidden"></div>
+
             <form id="loginForm">
                 <div class="form-group">
                     <label for="loginEmail">Email Address</label>
-                    <input type="email" id="loginEmail" class="form-control" placeholder="your.name@asiaprobutuan.com" required>
+                    <input type="email" id="loginEmail" class="form-control"
+                           placeholder="your.name@asiaprobutuan.com" required>
                 </div>
-                <div class="form-group">
+
+                <div class="form-group password-group">
                     <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required>
+
+                    <div class="password-wrapper">
+                        <input type="password"
+                            id="loginPassword"
+                            class="form-control"
+                            placeholder="Enter your password"
+                            required>
+                    <i class="bi bi-eye toggle-password" id="toggleLoginPassword"></i>
+                    </div>
                 </div>
+
+
                 <button type="submit" class="btn btn-primary">Sign In</button>
             </form>
+
             <div class="auth-switch">
                 Don't have an account? <a id="showRegister">Register here</a>
             </div>
         </div>
     </div>
 
+</div>
+
+
     <!-- Register Screen -->
     <div id="registerScreen" class="auth-container hidden">
+
+    <!-- LEFT SIDE (LOGO / IMAGE) -->
+    <div class="auth-left">
+        <img src="{{ asset('images/Asiapro-Horizontal-4.png') }}"
+             alt="AsiaPro Logo"
+             class="left-logo">
+    </div>
+
+    <!-- RIGHT SIDE (AUTH CARD) -->
+    <div class="auth-right">
         <div class="auth-card">
             <div class="auth-logo">
                 <h1>Create Account</h1>
                 <p>AsiaPro Butuan Employee Management</p>
             </div>
+
             <div id="registerError" class="error-message hidden"></div>
             <div id="registerSuccess" class="success-message hidden"></div>
+
             <form id="registerForm">
                 <div class="form-group">
                     <label for="registerName">Full Name</label>
-                    <input type="text" id="registerName" class="form-control" placeholder="Juan Dela Cruz" required>
+                    <input type="text" id="registerName"
+                           class="form-control"
+                           placeholder="Juan Dela Cruz"
+                           required>
                 </div>
+
                 <div class="form-group">
                     <label for="registerEmail">Email Address</label>
-                    <input type="email" id="registerEmail" class="form-control" placeholder="your.name@asiaprobutuan.com" required>
-                    <small style="color: var(--secondary); font-size: 12px; display: block; margin-top: 5px;">
+                    <input type="email" id="registerEmail"
+                           class="form-control"
+                           placeholder="your.name@asiaprobutuan.com"
+                           required>
+                    <small style="color: var(--secondary); font-size: 12px;">
                         Must use @asiaprobutuan.com email
                     </small>
                 </div>
-                <div class="form-group">
+
+                <!-- PASSWORD -->
+                <div class="form-group password-group">
                     <label for="registerPassword">Password</label>
-                    <input type="password" id="registerPassword" class="form-control" placeholder="At least 8 characters" required>
+                    <div class="password-wrapper">
+                        <input type="password"
+                               id="registerPassword"
+                               class="form-control"
+                               placeholder="At least 8 characters"
+                               required>
+                        <i class="bi bi-eye toggle-password"
+                           id="toggleRegisterPassword"></i>
+                    </div>
                 </div>
-                <div class="form-group">
+
+                <!-- CONFIRM PASSWORD -->
+                <div class="form-group password-group">
                     <label for="registerPasswordConfirm">Confirm Password</label>
-                    <input type="password" id="registerPasswordConfirm" class="form-control" placeholder="Re-enter password" required>
+                    <div class="password-wrapper">
+                        <input type="password"
+                               id="registerPasswordConfirm"
+                               class="form-control"
+                               placeholder="Re-enter password"
+                               required>
+                        <i class="bi bi-eye toggle-password"
+                           id="toggleRegisterPasswordConfirm"></i>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Create Account</button>
+
+                <button type="submit" class="btn btn-primary">
+                    Create Account
+                </button>
             </form>
+
             <div class="auth-switch">
-                Already have an account? <a id="showLogin">Sign in here</a>
+                Already have an account?
+                <a id="showLogin">Sign in here</a>
             </div>
         </div>
     </div>
+
+</div>
 
     <!-- Dashboard -->
     <div id="dashboardContainer" class="dashboard-container">
@@ -94,11 +166,11 @@
             </div>
             <div class="nav-item" data-section="deletedLeaves">
                 
-                <span>Deleted Leaves</span>
+                <span>Terminated Leaves</span>
             </div>
             <div class="nav-item" data-section="deletedEmployees">
                 
-                <span>Deleted Employees</span>
+                <span>Terminated Employees</span>
             </div>
             <div class="nav-item" data-section="employeeHistory">
                
@@ -156,7 +228,7 @@
             <div id="employeesSection" class="section hidden">
                 <div class="content-card">
                     <div class="card-header">
-                        <h2>Employees Management</h2>
+                        <h2>List of Employees</h2>
                         <button class="btn btn-success" id="addEmployeeBtn">+ Add Employee</button>
                     </div>
                     <div id="employeesTable"></div>
@@ -177,7 +249,7 @@
             <div id="requestLeaveSection" class="section hidden">
                 <div class="content-card">
                     <div class="card-header">
-                        <h2>Request Leave</h2>
+                        <h2>Create Leaves</h2>
                     </div>
                     <div class="employee-search">
                         <div class="form-group">
@@ -233,7 +305,7 @@
             <div id="deletedLeavesSection" class="section hidden">
                 <div class="content-card">
                     <div class="card-header">
-                        <h2>Deleted Leaves & History</h2>
+                        <h2>Canceled Leaves & History</h2>
                     </div>
                     <div id="deletedLeavesTable"></div>
                 </div>
@@ -243,7 +315,7 @@
             <div id="deletedEmployeesSection" class="section hidden">
                 <div class="content-card">
                     <div class="card-header">
-                        <h2>Deleted Employees</h2>
+                        <h2>Terminated Employees</h2>
                             <p class="card-subtitle">Deleted employees can be back or force-delete</p>
                         </div>
                     <div id="deletedEmployeesTable"></div>

@@ -56,7 +56,7 @@ class DashboardController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            \Log::error('Dashboard error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            /* \Log::error('Dashboard error: ' . $e->getMessage() . "\n" . $e->getTraceAsString()); */
             
             return response()->json([
                 'success' => false,

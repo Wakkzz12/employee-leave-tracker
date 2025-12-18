@@ -14,10 +14,10 @@ class EmployeeController extends Controller
     public function deleted()
     {
         // Debug: Log request
-        \Log::info('Fetching deleted employees', [
+        /* \Log::info('Fetching deleted employees', [
             'user_id' => auth()->id(),
             'user' => auth()->user() ? auth()->user()->email : 'null'
-        ]);
+        ]); */
         
         try {
             // Get soft-deleted employees
@@ -25,7 +25,7 @@ class EmployeeController extends Controller
                 ->orderBy('deleted_at', 'desc')
                 ->get();
             
-            \Log::info('Found deleted employees:', ['count' => $deletedEmployees->count()]);
+            /* \Log::info('Found deleted employees:', ['count' => $deletedEmployees->count()]); */
             
             return response()->json([
                 'success' => true,
@@ -33,7 +33,7 @@ class EmployeeController extends Controller
                 'count' => $deletedEmployees->count()
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error in deleted(): ' . $e->getMessage());
+            /* \Log::error('Error in deleted(): ' . $e->getMessage()); */
             
             return response()->json([
                 'success' => false,

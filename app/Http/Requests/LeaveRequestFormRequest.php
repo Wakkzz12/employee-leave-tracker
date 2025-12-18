@@ -18,7 +18,7 @@ class LeaveRequestFormRequest extends FormRequest
 {
     return [
         'employee_id'   => 'sometimes|required|exists:employees,id',
-        'start_leave'   => 'sometimes|required|date',
+        'start_leave'   => 'sometimes|required|date|after_or_equal:today',
         'end_leave'     => 'sometimes|required|date|after_or_equal:start_leave',
         'type_of_leave' => [
             'sometimes',
@@ -41,7 +41,8 @@ public function messages()
         'type_of_leave.required' => 'Please specify the type of leave.',
         'proof_file.mimes'       => 'Proof must be a file of type: pdf, png, jpg, jpeg.',
         'status.in'              => 'Status must be one of: pending, approved, rejected (lowercase).',
-        'rejection_reason.required_if' => 'Rejection reason is required when rejecting a leave request.'
+        'rejection_reason.required_if' => 'Rejection reason is required when rejecting a leave request.',
+        'start_leave.after_or_equal' => 'Start date cannot be in the past.',
     ];
 }
 }

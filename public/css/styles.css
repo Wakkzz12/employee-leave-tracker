@@ -26,18 +26,35 @@
         /* Authentication Styles */
         .auth-container {
             display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
             padding: 20px;
         }
 
+        .auth-left {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .left-logo {
+            max-width:  100%;
+            height: auto;
+            padding-left: 5%;
+        }
+        .auth-right {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding-right: 6%;
+        }
         .auth-card {
             background: linear-gradient(0deg, #362fa0 10%, white 40%);
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            width: 50%;
+            width: 100%;
             max-width: 370px;
             animation: slideUp 0.5s ease;
         }
@@ -125,6 +142,7 @@
             margin-top: 25px;
             color: var(--secondary);
             font-size: 14px;
+            color: #e0e7ff;
         }
 
         .auth-switch a {
@@ -136,6 +154,28 @@
 
         .auth-switch a:hover {
             text-decoration: underline;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 45px; /* space for eye icon */
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+            color: #777;
+        }
+
+        .toggle-password:hover {
+            color: #333;
         }
 
         .error-message {

@@ -28,6 +28,7 @@ class LeaveRequestController extends Controller
      */
     public function store(LeaveRequestFormRequest $request)
 {
+    //$today = Carbon::today()->toDateString();
     try {
         $employee = Employee::findOrFail($request->employee_id);
 
@@ -164,7 +165,7 @@ class LeaveRequestController extends Controller
         ]);
         
     } catch (\Exception $e) {
-        \Log::error('Leave update error: ' . $e->getMessage());
+        /* \Log::error('Leave update error: ' . $e->getMessage()); */
         return response()->json([
             'success' => false,
             'message' => 'Failed to update leave request: ' . $e->getMessage()
