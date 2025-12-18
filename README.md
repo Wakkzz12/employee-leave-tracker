@@ -75,8 +75,8 @@ A powerful leave tracking system designed to simplify and automate leave process
 ## 🛠 Technology Stack
 
 * **Backend:** Laravel 10+
-* **Database:** MySQL
-* **Frontend:** Vanilla JS, CSS3
+* **Database:** PostgreSQL
+* **Frontend:** JS, CSS Bootstrap
 * **API Authentication:** Laravel Sanctum
 * **ORM:** Eloquent
 
@@ -154,8 +154,10 @@ leave-tracker-system/
 ├── app/
 ├── public/
 ├── resources/
+|   ├──js/mdoules
+|   ├──css/styles.css
+|   ├──images/logo.png
 │   ├── views/
-│   └── js/
 ├── routes/
 │   └── web.php
 ├── database/
