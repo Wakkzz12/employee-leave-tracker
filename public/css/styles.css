@@ -414,24 +414,33 @@
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+            vertical-align: middle;
         }
 
         table td {
             padding: 15px;
             border-bottom: 1px solid var(--border);
             font-size: 14px;
-        }
+            vertical-align: middle;
 
+        }
+        
         table tr:hover {
             background: var(--light);
         }
 
+        .col-center {
+            text-align: center !important;
+            vertical-align: middle !important;
+        }
         .badge {
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
             display: inline-block;
+            text-align: center;
         }
 
         .badge-pending {
@@ -553,9 +562,18 @@
         }
 
         .action-buttons {
-            display: inline-flex;
+            display: flex;
             justify-content: center;
             align-items: center;
+            gap: 8px;
+        }
+
+        .action-buttons.one-button {
+            justify-content: center;
+        }
+
+        .action-buttons.two-buttons {
+            justify-content: center;
         }
 
         .empty-state {

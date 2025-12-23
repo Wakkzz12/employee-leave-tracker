@@ -39,12 +39,25 @@ class LeaveRequest extends Model
         $start = Carbon::parse($this->start_leave);
         $end = Carbon::parse($this->end_leave);
         
+        // If same day (half day or full day logic?)
+        if ($start->isSameDay($end)) {
+            // Check if your system supports half days
+            if ($this->is_half_day) {
+                return 0.5;
+            }
+            // Or check if it's a weekday
+            return $start->isWeekday() ? 1 : 0;
+        }
+        
+        // For multi-day leave
         $days = 0;
-        while ($start->lte($end)) {
-            if ($start->isWeekday()) {
+        $current = $start->copy();
+        
+        while ($current->lte($end)) {
+            if ($current->isWeekday()) {
                 $days++;
             }
-            $start->addDay();
+            $current->addDay();
         }
         
         return $days;

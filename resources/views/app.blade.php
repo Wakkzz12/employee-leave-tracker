@@ -478,9 +478,6 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" id="deleteLeaveInModal" style="display: none;">
-                    Delete Leave Request
-                </button>
                 <div class="footer-right">
                     <button type="button" class="btn btn-secondary" id="cancelLeaveBtn">Cancel</button>
                     <button type="submit" class="btn btn-primary">Update Leave</button>

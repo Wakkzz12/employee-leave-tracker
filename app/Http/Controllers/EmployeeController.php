@@ -141,7 +141,7 @@ class EmployeeController extends Controller
         }
         
         if ($request->has('leave_balance')) {
-            $rules['leave_credits'] = 'required|integer|min:0';
+            $rules['leave_balance'] = 'required|integer|min:0';
         }
         
         if ($request->has('status')) {

@@ -112,7 +112,9 @@ function createEmployeeRow(emp) {
             <td><span class="badge badge-${emp.status}">${emp.status.toUpperCase()}</span></td>
             <td>${emp.leave_balance || 0} days</td>
             <td>
-                <button class="btn btn-warning btn-sm" onclick="editEmployee(${emp.id})">Edit</button>
+                <button class="btn btn-warning btn-sm" onclick="editEmployee(${emp.id})">
+                    <i class="bi bi-pencil"></i>
+                </button>
             </td>
         </tr>
     `;
@@ -427,13 +429,15 @@ async function loadDeletedEmployees() {
                             <td>${emp.position || '-'}</td>
                             <td><span class="badge badge-${emp.status || 'deleted'}">${(emp.status || 'deleted').toUpperCase()}</span></td>
                             <td>${emp.deleted_at ? formatDateTime(emp.deleted_at) : 'Unknown'}</td>
-                            <td class="text-center" style="white-space: nowrap;">
-                                <button class="btn btn-success btn-sm me-1" onclick="restoreEmployee({{ $emp->id }})">
+                            <td class="text-center"">
+                                <div class="action-buttons">
+                                <button class="btn btn-success btn-sm me-1" onclick="restoreEmployee(${emp.id})">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
-                                <button class="btn btn-danger btn-sm" onclick="forceDeleteEmployee({{ $emp->id }})">
+                                <button class="btn btn-danger btn-sm" onclick="forceDeleteEmployee(${emp.id})">
                                     <i class="bi bi-trash-fill"></i>
                                 </button>
+                                </div>
                             </td>
 
                         </tr>

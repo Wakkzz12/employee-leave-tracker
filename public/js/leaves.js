@@ -114,13 +114,22 @@ function createLeaveRow(leave) {
             <td>${capitalize(leave.type_of_leave)}</td>
             <td>${formatDate(leave.start_leave)}</td>
             <td>${formatDate(leave.end_leave)}</td>
-            <td>${leave.days_requested}</td>
-            <td>${leave.remaining_credits}</td>
+            <td class="col-center">${leave.days_requested}</td>
+            <td class="col-center">${leave.remaining_credits}</td>
             <td><span class="badge badge-${leave.status}">${leave.status.toUpperCase()}</span></td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn btn-warning btn-sm" onclick="editLeave(${leave.id})">Edit</button>
-                    ${leave.status === 'rejected' ? `<button class="btn btn-danger btn-sm" onclick="deleteLeave(${leave.id})">Delete</button>` : ''}
+            <td class="text-center">
+                <div class="action-buttons ${leave.status === 'rejected' ? 'two-buttons' : 'one-button'}">
+                    <button class="btn btn-warning btn-sm" onclick="editLeave(${leave.id})">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+
+                    ${
+                        leave.status === 'rejected'
+                            ? `<button class="btn btn-danger btn-sm" onclick="deleteLeave(${leave.id})">
+                                    <i class="bi bi-trash"></i>
+                            </button>`
+                            : ''
+                    }
                 </div>
             </td>
         </tr>
