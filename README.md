@@ -98,7 +98,7 @@ Follow these steps to install the system on your local machine.
 
 ```bash
 git clone <repository-url>
-cd leave-tracker-system
+cd <folder>
 ```
 
 ### **2. Install PHP dependencies**
@@ -138,14 +138,16 @@ php artisan db:seed
 php artisan serve
 ```
 
-### **Front-end (if using Node modules)**
-
-```bash
-npm install
-npm run dev
-```
-
 ---
+
+### Sample Accounts for Log-in
+```bash
+email: mariadelacruz@asiaprobutuan.com
+password: adminmaria
+
+email: admin@asiaprobutuan.com
+password: admin12345
+```
 
 ## 📁 Project Structure
 
@@ -167,14 +169,28 @@ leave-tracker-system/
 ```
 
 ---
+## MODIFIERS
 
-## 🤝 Contributing
+Members
+
+* Joaquin Emmanuel Cabelin (JK1) - PROJECT LEADER / DEVELOPER
+* Sychae Enriquez (DEL1) - Documentarist
+* Cortney Esguerra (DEL1) - Documentarist
+* Dave Dalaguit (DE1) - Documentarist
+
+---
+
+## Contributing
 
 Contributions are welcome! You can:
 
 * Submit feature requests
 * Improve documentation
 * Open bug reports
+* email it to 
+```
+joaquinemmanuel.cabelin@carsu.edu.ph
+```
 
 ---
 
